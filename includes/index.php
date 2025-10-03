@@ -1,22 +1,33 @@
+<?php
+session_start();
+
+$usuario_logado = false;
+$usuario_nome = '';
+$usuario_tipo = '';
+
+if(isset($_SESSION['usuario_id'])){
+    $usuario_logado = true;
+    $usuario_nome = $_SESSION['usuario_nome'];
+    $usuario_tipo = $_SESSION['usuario_tipo'];
+}
+?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="../css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <title>Dev Coffe</title>
 </head>
-
 <body>
     <header class="header">
         <section>
             <a href="#" class="logo">
-                <img src="img/dev_coffe_logo.png" alt="logo">
+                <img src="../img/logo_devcoffe.png" alt="logo">
             </a>
             <nav class="navbar">
                 <a href="#home">Home</a>
@@ -26,11 +37,17 @@
                 <a href="#address">Endereço</a>
             </nav>
             <div class="icons">
-                <img width="30" height="30" src="https://img.icons8.com/ios-filled/30/ffffff/search--v2.png"
-                    alt="search--v2" />
-                <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/ffffff/shopping-cart--v1.png"
-                    alt="shopping-cart--v1" />
-
+                <?php if($usuario_logado): ?>
+                    <span style="color: #fff; font-size: 1.6rem; margin-right: 1rem;">
+                        Olá, <?php echo $usuario_nome; ?>
+                    </span>
+                    <a href="logout.php" style="color: #fff; font-size: 1.6rem; margin-right: 1rem;">Sair</a>
+                <?php else: ?>
+                    <a href="login.php" style="color: #fff; font-size: 1.6rem; margin-right: 1rem;">Login</a>
+                    <a href="cadastro.php" style="color: #fff; font-size: 1.6rem;">Cadastrar</a>
+                <?php endif; ?>
+                <img width="30" height="30" src="https://img.icons8.com/ios-filled/30/ffffff/search--v2.png" alt="search--v2" />
+                <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/ffffff/shopping-cart--v1.png" alt="shopping-cart--v1" />
             </div>
         </section>
     </header>
@@ -49,7 +66,7 @@
         <h2 class="title">Sobre <span>Nós</span></h2>
         <div class="row">
             <div class="container-image">
-                <img src="img/about-img.jpg" alt="sobre-nos">
+                <img src="../img/about-img.jpg" alt="sobre-nos">
             </div>
             <div class="content">
                 <h3>O Que Faz Nosso Café Especial</h3>
