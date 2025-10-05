@@ -21,13 +21,13 @@ if(isset($_SESSION['usuario_id'])){
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <title>Dev Coffe</title>
+    <title>Dev Coffee</title>
 </head>
 <body>
     <header class="header">
         <section>
             <a href="#" class="logo">
-                <img src="../img/logo_devcoffe.png" alt="logo">
+                <img src="../img/devcoffee_logo.png" alt="logo">
             </a>
             <nav class="navbar">
                 <a href="#home">Home</a>
@@ -37,17 +37,10 @@ if(isset($_SESSION['usuario_id'])){
                 <a href="#address">Endereço</a>
             </nav>
             <div class="icons">
-                <?php if($usuario_logado): ?>
-                    <span style="color: #fff; font-size: 1.6rem; margin-right: 1rem;">
-                        Olá, <?php echo $usuario_nome; ?>
-                    </span>
-                    <a href="logout.php" style="color: #fff; font-size: 1.6rem; margin-right: 1rem;">Sair</a>
-                <?php else: ?>
-                    <a href="login.php" style="color: #fff; font-size: 1.6rem; margin-right: 1rem;">Login</a>
-                    <a href="cadastro.php" style="color: #fff; font-size: 1.6rem;">Cadastrar</a>
-                <?php endif; ?>
-                <img width="30" height="30" src="https://img.icons8.com/ios-filled/30/ffffff/search--v2.png" alt="search--v2" />
-                <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/ffffff/shopping-cart--v1.png" alt="shopping-cart--v1" />
+                <div class="auth-buttons">
+                    <a href="login.php" class="btn-login">Entrar</a>
+                    <a href="cadastro.php" class="btn-cadastrar">Cadastrar</a>
+                </div>
             </div>
         </section>
     </header>
@@ -57,7 +50,7 @@ if(isset($_SESSION['usuario_id'])){
             <div class="content">
                 <h3>CODE COM O MELHOR CAFÉ DA REGIÃO</h3>
                 <p>Venha experimentar o sabor inigualável do nosso café, preparado com grãos selecionados e torrados na medida certa para proporcionar uma experiência única a cada gole.</p>
-                <a href="#" class="btn">Pegue o seu Agora!</a>
+                <a href="#menu" class="btn">Pegue o seu Agora!</a>
             </div>
         </section>
     </div>
@@ -74,7 +67,7 @@ if(isset($_SESSION['usuario_id'])){
                     renomadas e colhidos no ponto ideal de maturação. Além disso, nossa equipe de baristas é
                     altamente treinada para preparar cada xícara com precisão e cuidado, garantindo um sabor
                     excepcional a cada gole.</p>
-                <a href="#" class="btn">Saiba mais</a>
+                <a href="#menu" class="btn">Conhecer Menu</a>
             </div>
         </div>
     </section>
@@ -85,18 +78,18 @@ if(isset($_SESSION['usuario_id'])){
         <div class="box-container">
             <?php
             $menu_items = array(
-                array("menu-1.png", "Café coado"),
-                array("menu-2.png", "Café coado"),
-                array("menu-3.png", "Café coado"),
-                array("menu-4.png", "Café coado"),
-                array("menu-5.png", "Café coado"),
-                array("menu-6.png", "Café coado")
+                array("menu-1.png", "Café Coado Premium"),
+                array("menu-2.png", "Espresso Italiano"),
+                array("menu-3.png", "Cappuccino Cremoso"),
+                array("menu-4.png", "Mocha Chocolate"),
+                array("menu-5.png", "Café Gelado"),
+                array("menu-6.png", "Latte Artístico")
             );
             
             foreach ($menu_items as $item) {
                 echo '
                 <div class="box">
-                    <img src="img/' . $item[0] . '" alt="' . $item[1] . '">
+                    <img src="../img/' . $item[0] . '" alt="' . $item[1] . '">
                     <h3>' . $item[1] . '</h3>
                     <div class="price">R$ 15,99 <span>R$ 20,99</span></div>
                     <a href="#" class="btn">Adicione ao Carrinho</a>
@@ -111,9 +104,9 @@ if(isset($_SESSION['usuario_id'])){
         <div class="box-container">
             <?php
             $reviews = array(
-                array("pic-1.png", "Matheus da Silva", "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sed ut esse, quas consectetur quam vero deleniti, animi repudiandae eum error fugiat molestias. Quis, odit placeat perferendis modi officia ut architecto!"),
-                array("pic-2.png", "Ana Santos", "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sed ut esse, quas consectetur quam vero deleniti, animi repudiandae eum error fugiat molestias. Quis, odit placeat perferendis modi officia ut architecto!"),
-                array("pic-3.png", "Lucas Montanno", "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sed ut esse, quas consectetur quam vero deleniti, animi repudiandae eum error fugiat molestias. Quis, odit placeat perferendis modi officia ut architecto!")
+                array("pic-1.png", "Matheus da Silva", "O melhor café da cidade! Ambiente aconchegante e atendimento excepcional. Recomendo a todos!"),
+                array("pic-2.png", "Ana Santos", "Café maravilhoso e preço justo. Adorei a variedade do menu e o atendimento foi muito atencioso."),
+                array("pic-3.png", "Lucas Montanno", "Perfeito para trabalhar e tomar um café de qualidade. WiFi rápido e bebidas deliciosas!")
             );
             
             foreach ($reviews as $review) {
@@ -121,14 +114,14 @@ if(isset($_SESSION['usuario_id'])){
                 <div class="box">
                     <img src="img/quote-img.png" alt="comentario">
                     <p>' . $review[2] . '</p>
-                    <img src="img/' . $review[0] . '" alt="foto-cliente">
+                    <img src="../img/' . $review[0] . '" alt="foto-cliente">
                     <h3>' . $review[1] . '</h3>
                     <div class="stars">
-                        <img width="30" height="30" src="https://img.icons8.com/ios-filled/30/ffffff/star--v1.png" alt="star--v1" />
-                        <img width="30" height="30" src="https://img.icons8.com/ios-filled/30/ffffff/star--v1.png" alt="star--v1" />
-                        <img width="30" height="30" src="https://img.icons8.com/ios-filled/30/ffffff/star--v1.png" alt="star--v1" />
-                        <img width="30" height="30" src="https://img.icons8.com/ios-filled/30/ffffff/star--v1.png" alt="star--v1" />
-                        <img width="30" height="30" src="https://img.icons8.com/ios-filled/30/ffffff/star-half-empty.png" alt="star-half-empty"/>    
+                        <img width="25" height="25" src="https://img.icons8.com/ios-filled/30/ffffff/star--v1.png" alt="star--v1" />
+                        <img width="25" height="25" src="https://img.icons8.com/ios-filled/30/ffffff/star--v1.png" alt="star--v1" />
+                        <img width="25" height="25" src="https://img.icons8.com/ios-filled/30/ffffff/star--v1.png" alt="star--v1" />
+                        <img width="25" height="25" src="https://img.icons8.com/ios-filled/30/ffffff/star--v1.png" alt="star--v1" />
+                        <img width="25" height="25" src="https://img.icons8.com/ios-filled/30/ffffff/star-half-empty.png" alt="star-half-empty"/>    
                     </div>
                 </div>';
             }
@@ -142,6 +135,16 @@ if(isset($_SESSION['usuario_id'])){
     </section>
 
     <section class="footer">
+        <div style="text-align: center; color: #fff; padding: 2rem; font-size: 1.4rem;">
+            <p>&copy; 2024 Dev Coffee. Todos os direitos reservados.</p>
+            <?php if($usuario_logado): ?>
+                <p style="margin-top: 1rem; font-size: 1.2rem; opacity: 0.8;">
+                    Logado como: <?php echo $usuario_nome; ?> | 
+                    <a href="home.php" style="color: var(--main-color);">Minha Conta</a> | 
+                    <a href="logout.php" style="color: var(--main-color);">Sair</a>
+                </p>
+            <?php endif; ?>
+        </div>
     </section>
 </body>
 </html>
