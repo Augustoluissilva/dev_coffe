@@ -1,0 +1,335 @@
+/* ===== ESTILOS PARA LOGIN E CADASTRO ===== */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    overflow-x: hidden;
+}
+
+.auth-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Lado Esquerdo - Background com Grãos de Café */
+.auth-left {
+    flex: 1;
+    background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('../img/coffee-beans-bg.jpg') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    position: relative;
+}
+
+.auth-logo {
+    position: absolute;
+    top: 3rem;
+    left: 3rem;
+    color: #FFFFFF;
+    font-size: 2.4rem;
+    font-weight: 700;
+    text-decoration: none;
+    z-index: 10;
+}
+
+.auth-left-content {
+    text-align: center;
+    color: #FFFFFF;
+    max-width: 400px;
+    z-index: 2;
+}
+
+.auth-left-title {
+    font-size: 3.6rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+}
+
+.auth-left-subtitle {
+    font-size: 1.6rem;
+    margin-bottom: 3rem;
+    line-height: 1.6;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+.auth-btn-outline {
+    background: transparent;
+    border: 2px solid #FFFFFF;
+    color: #FFFFFF;
+    padding: 1.2rem 3rem;
+    border-radius: 2.5rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.auth-btn-outline:hover {
+    background: #FFFFFF;
+    color: #000000;
+    transform: translateY(-2px);
+}
+
+/* Lado Direito - Formulário Branco */
+.auth-right {
+    flex: 1;
+    background: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Respingo de Café */
+.coffee-splash {
+    position: absolute;
+    bottom: -50px;
+    right: -50px;
+    width: 300px;
+    height: 300px;
+    background: url('../img/coffee-splash.png') no-repeat center center;
+    background-size: contain;
+    opacity: 0.1;
+    z-index: 1;
+}
+
+.auth-form-container {
+    width: 100%;
+    max-width: 400px;
+    z-index: 2;
+}
+
+.auth-title {
+    font-size: 3.2rem;
+    font-weight: 700;
+    color: #333333;
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+/* Botões Sociais */
+.social-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.social-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 1px solid #E0E0E0;
+    background: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.social-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #DDAA61;
+}
+
+.social-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Divisor */
+.auth-divider {
+    text-align: center;
+    color: #666666;
+    font-size: 1.4rem;
+    margin-bottom: 2rem;
+    position: relative;
+    font-weight: 500;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 30%;
+    height: 1px;
+    background: #E0E0E0;
+}
+
+.auth-divider::before {
+    left: 0;
+}
+
+.auth-divider::after {
+    right: 0;
+}
+
+/* Formulário */
+.auth-form {
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 2rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 1.4rem 1.6rem;
+    border: 1px solid #E0E0E0;
+    border-radius: 0.8rem;
+    font-size: 1.4rem;
+    background: #FFFFFF;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    font-family: 'Montserrat', sans-serif;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #DDAA61;
+    box-shadow: 0 4px 8px rgba(221, 170, 97, 0.2);
+}
+
+.form-input::placeholder {
+    color: #999999;
+}
+
+/* Link Esqueceu Senha */
+.forgot-link {
+    display: block;
+    text-align: right;
+    color: #666666;
+    font-size: 1.2rem;
+    text-decoration: none;
+    margin-bottom: 2rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.forgot-link:hover {
+    color: #DDAA61;
+}
+
+/* Botão Principal */
+.auth-btn-primary {
+    width: 100%;
+    background: #DDAA61;
+    color: #FFFFFF;
+    border: none;
+    padding: 1.4rem;
+    border-radius: 0.8rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Montserrat', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.auth-btn-primary:hover {
+    background: #C99750;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(221, 170, 97, 0.3);
+}
+
+/* Mensagens de Erro/Sucesso */
+.auth-message {
+    padding: 1rem;
+    border-radius: 0.8rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    font-size: 1.4rem;
+    font-weight: 500;
+}
+
+.auth-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.auth-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .auth-container {
+        flex-direction: column;
+    }
+    
+    .auth-left {
+        min-height: 40vh;
+        padding: 4rem 2rem;
+    }
+    
+    .auth-logo {
+        top: 2rem;
+        left: 2rem;
+    }
+    
+    .auth-left-title {
+        font-size: 2.8rem;
+    }
+    
+    .auth-left-subtitle {
+        font-size: 1.4rem;
+    }
+    
+    .auth-right {
+        padding: 3rem 1.5rem;
+    }
+    
+    .auth-title {
+        font-size: 2.8rem;
+    }
+    
+    .coffee-splash {
+        width: 200px;
+        height: 200px;
+        bottom: -30px;
+        right: -30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-left-title {
+        font-size: 2.4rem;
+    }
+    
+    .auth-title {
+        font-size: 2.4rem;
+    }
+    
+    .social-buttons {
+        gap: 1rem;
+    }
+    
+    .social-btn {
+        width: 45px;
+        height: 45px;
+    }
+}

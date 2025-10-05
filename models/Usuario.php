@@ -18,17 +18,17 @@ class Usuario {
     public $estado;
     public $cep;
     public $tipo;
-    public $ativo;
-    public $data_cadastro;
-    public $ultimo_login;
-    public $avatar;
 
     public function __construct($db) {
         $this->conn = $db;
     }
 
-    // Cadastrar usuário
     public function cadastrar() {
+        // Remover caracteres especiais do CPF
+        $cpf_limpo = preg_replace('/[^0-9]/', '', $this->cpf);
+        $telefone_limpo = preg_replace('/[^0-9]/', '', $this->telefone);
+        $cep_limpo = preg_replace('/[^0-9]/', '', $this->cep);
+
         $query = "INSERT INTO " . $this->table_name . " 
                  SET nome=:nome, email=:email, senha=:senha, telefone=:telefone,
                      cpf=:cpf, data_nascimento=:data_nascimento, endereco=:endereco,
@@ -37,18 +37,15 @@ class Usuario {
         
         $stmt = $this->conn->prepare($query);
 
-        // Limpar e validar dados
+        // Limpar dados
         $this->nome = htmlspecialchars(strip_tags($this->nome));
         $this->email = htmlspecialchars(strip_tags($this->email));
-        $this->telefone = htmlspecialchars(strip_tags($this->telefone));
-        $this->cpf = htmlspecialchars(strip_tags($this->cpf));
         $this->endereco = htmlspecialchars(strip_tags($this->endereco));
         $this->numero = htmlspecialchars(strip_tags($this->numero));
         $this->complemento = htmlspecialchars(strip_tags($this->complemento));
         $this->bairro = htmlspecialchars(strip_tags($this->bairro));
         $this->cidade = htmlspecialchars(strip_tags($this->cidade));
         $this->estado = htmlspecialchars(strip_tags($this->estado));
-        $this->cep = htmlspecialchars(strip_tags($this->cep));
 
         // Hash da senha
         $this->senha = password_hash($this->senha, PASSWORD_DEFAULT);
@@ -57,8 +54,8 @@ class Usuario {
         $stmt->bindParam(":nome", $this->nome);
         $stmt->bindParam(":email", $this->email);
         $stmt->bindParam(":senha", $this->senha);
-        $stmt->bindParam(":telefone", $this->telefone);
-        $stmt->bindParam(":cpf", $this->cpf);
+        $stmt->bindParam(":telefone", $telefone_limpo);
+        $stmt->bindParam(":cpf", $cpf_limpo);
         $stmt->bindParam(":data_nascimento", $this->data_nascimento);
         $stmt->bindParam(":endereco", $this->endereco);
         $stmt->bindParam(":numero", $this->numero);
@@ -66,7 +63,7 @@ class Usuario {
         $stmt->bindParam(":bairro", $this->bairro);
         $stmt->bindParam(":cidade", $this->cidade);
         $stmt->bindParam(":estado", $this->estado);
-        $stmt->bindParam(":cep", $this->cep);
+        $stmt->bindParam(":cep", $cep_limpo);
 
         if($stmt->execute()) {
             return true;
@@ -74,9 +71,8 @@ class Usuario {
         return false;
     }
 
-    // Login do usuário
     public function login() {
-        $query = "SELECT id, nome, email, senha, tipo, avatar FROM " . $this->table_name . " 
+        $query = "SELECT id, nome, email, senha, tipo FROM " . $this->table_name . " 
                  WHERE email = :email AND ativo = 1";
         
         $stmt = $this->conn->prepare($query);
@@ -91,7 +87,6 @@ class Usuario {
                 $this->id = $row['id'];
                 $this->nome = $row['nome'];
                 $this->tipo = $row['tipo'];
-                $this->avatar = $row['avatar'];
                 
                 // Atualizar último login
                 $this->atualizarUltimoLogin();
@@ -102,7 +97,6 @@ class Usuario {
         return false;
     }
 
-    // Atualizar último login
     private function atualizarUltimoLogin() {
         $query = "UPDATE " . $this->table_name . " SET ultimo_login = NOW() WHERE id = :id";
         $stmt = $this->conn->prepare($query);
@@ -110,7 +104,6 @@ class Usuario {
         $stmt->execute();
     }
 
-    // Verificar se email existe
     public function emailExiste() {
         $query = "SELECT id FROM " . $this->table_name . " WHERE email = :email";
         $stmt = $this->conn->prepare($query);
@@ -119,42 +112,13 @@ class Usuario {
         return $stmt->rowCount() > 0;
     }
 
-    // Verificar se CPF existe
     public function cpfExiste() {
+        $cpf_limpo = preg_replace('/[^0-9]/', '', $this->cpf);
         $query = "SELECT id FROM " . $this->table_name . " WHERE cpf = :cpf";
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":cpf", $this->cpf);
+        $stmt->bindParam(":cpf", $cpf_limpo);
         $stmt->execute();
         return $stmt->rowCount() > 0;
-    }
-
-    // Buscar usuário por ID
-    public function buscarPorId($id) {
-        $query = "SELECT * FROM " . $this->table_name . " WHERE id = :id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":id", $id);
-        $stmt->execute();
-        
-        if($stmt->rowCount() == 1) {
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            $this->id = $row['id'];
-            $this->nome = $row['nome'];
-            $this->email = $row['email'];
-            $this->telefone = $row['telefone'];
-            $this->cpf = $row['cpf'];
-            $this->data_nascimento = $row['data_nascimento'];
-            $this->endereco = $row['endereco'];
-            $this->numero = $row['numero'];
-            $this->complemento = $row['complemento'];
-            $this->bairro = $row['bairro'];
-            $this->cidade = $row['cidade'];
-            $this->estado = $row['estado'];
-            $this->cep = $row['cep'];
-            $this->tipo = $row['tipo'];
-            $this->avatar = $row['avatar'];
-            return true;
-        }
-        return false;
     }
 }
 ?>
