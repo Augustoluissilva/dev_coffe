@@ -20,7 +20,7 @@ body {
 /* Lado Esquerdo - Background com Grãos de Café */
 .auth-left {
     flex: 1;
-    background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('../img/coffee-beans-bg.jpg') no-repeat center center;
+    background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)), url('../img/home-img2.jpg') no-repeat center center;
     background-size: cover;
     display: flex;
     flex-direction: column;
@@ -32,13 +32,17 @@ body {
 
 .auth-logo {
     position: absolute;
-    top: 3rem;
-    left: 3rem;
-    color: #FFFFFF;
-    font-size: 2.4rem;
-    font-weight: 700;
+    top: 2.5rem;
+    right: 3rem;
+    display: inline-block;
     text-decoration: none;
     z-index: 10;
+}
+
+.auth-logo img {
+    height: 56px;
+    width: auto;
+    display: block;
 }
 
 .auth-left-content {
@@ -103,7 +107,7 @@ body {
     right: -50px;
     width: 300px;
     height: 300px;
-    background: url('../img/coffee-splash.png') no-repeat center center;
+    background: none;
     background-size: contain;
     opacity: 0.1;
     z-index: 1;
@@ -194,20 +198,21 @@ body {
 
 .form-input {
     width: 100%;
+    height: 56px;
     padding: 1.4rem 1.6rem;
-    border: 1px solid #E0E0E0;
-    border-radius: 0.8rem;
+    border: none;
+    border-radius: 1rem;
     font-size: 1.4rem;
-    background: #FFFFFF;
+    background: #E9E9E9;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: none;
     font-family: 'Montserrat', sans-serif;
 }
 
 .form-input:focus {
     outline: none;
-    border-color: #DDAA61;
-    box-shadow: 0 4px 8px rgba(221, 170, 97, 0.2);
+    border: 2px solid #DDAA61;
+    background: #F2F2F2;
 }
 
 .form-input::placeholder {
@@ -236,8 +241,8 @@ body {
     background: #DDAA61;
     color: #FFFFFF;
     border: none;
-    padding: 1.4rem;
-    border-radius: 0.8rem;
+    padding: 1.2rem 1.6rem;
+    border-radius: 2.5rem;
     font-size: 1.4rem;
     font-weight: 600;
     cursor: pointer;
