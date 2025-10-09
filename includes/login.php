@@ -122,7 +122,9 @@ if($_POST){
         <!-- Lado Direito - Background Café -->
         <div class="auth-right">
             <div class="auth-logo-container">
-                <a href="index.php" class="auth-logo">dev coffee</a>
+                <a href="index.php" class="auth-logo">
+                    <Img src="../img/devcoffee_logo.png" alt="Dev Coffee Logo" style="height: 40px;">
+                </a>
             </div>
             <div class="auth-right-content">
                 <h1 class="auth-right-title">Olá!</h1>
@@ -137,7 +139,7 @@ if($_POST){
             // Fallback para imagem de background
             const authRight = document.querySelector('.auth-right');
             const testImage = new Image();
-            testImage.src = '../img/coffee-beans-bg.jpg';
+            testImage.src = '../img/login_cadas.jpeg';
             
             testImage.onerror = function() {
                 authRight.classList.add('no-bg-image');

@@ -29,23 +29,22 @@ body {
     overflow: hidden;
 }
 
+/* Mancha de café decorativa */
 .coffee-splash {
     position: absolute;
     bottom: -150px;
     right: -150px;
     width: 500px;
     height: 500px;
-    background: #E0B76F;
-    border-radius: 45% 55% 70% 30% / 30% 40% 60% 70%;
+    background: url('../img/mancha_cafe-removebg-preview.png') center/contain no-repeat;
     opacity: 0.08;
-    transform: rotate(-15deg);
     z-index: 1;
     animation: float 6s ease-in-out infinite;
 }
 
 @keyframes float {
-    0%, 100% { transform: rotate(-15deg) translateY(0px); }
-    50% { transform: rotate(-15deg) translateY(-20px); }
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
 }
 
 .auth-form-container {
@@ -97,7 +96,7 @@ body {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    border: 2px solid #E0B76F;
+    border: 2px solid #d6a35d;
     background: transparent;
     display: flex;
     align-items: center;
@@ -119,17 +118,17 @@ body {
 }
 
 .social-btn.facebook::before {
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23E0B76F" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>');
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23d6a35d" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>');
 }
 
 .social-btn.google::before {
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23E0B76F" d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>');
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23d6a35d" d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>');
 }
 
 .social-btn:hover {
-    background: #E0B76F;
+    background: #d6a35d;
     transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(224, 183, 111, 0.3);
+    box-shadow: 0 8px 20px rgba(214, 163, 93, 0.3);
 }
 
 .social-btn:hover::before {
@@ -185,13 +184,14 @@ body {
     font-family: 'Montserrat', sans-serif;
     font-weight: 500;
     color: #333;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .form-input:focus {
     outline: none;
-    border-color: #E0B76F;
+    border-color: #d6a35d;
     background: white;
-    box-shadow: 0 6px 20px rgba(224, 183, 111, 0.15);
+    box-shadow: 0 6px 20px rgba(214, 163, 93, 0.15);
     transform: translateY(-2px);
 }
 
@@ -214,7 +214,7 @@ body {
 }
 
 .forgot-link:hover {
-    color: #E0B76F;
+    color: #d6a35d;
     transform: translateX(-2px);
 }
 
@@ -225,7 +225,7 @@ body {
     left: 0;
     width: 0;
     height: 1px;
-    background: #E0B76F;
+    background: #d6a35d;
     transition: width 0.3s ease;
 }
 
@@ -237,7 +237,7 @@ body {
 .auth-btn-primary {
     width: 100%;
     padding: 18px;
-    background: #E0B76F;
+    background: #d6a35d;
     color: white;
     border: none;
     border-radius: 12px;
@@ -264,9 +264,9 @@ body {
 }
 
 .auth-btn-primary:hover {
-    background: #D8A954;
+    background: #c8944d;
     transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(224, 183, 111, 0.4);
+    box-shadow: 0 10px 25px rgba(214, 163, 93, 0.4);
 }
 
 .auth-btn-primary:hover::before {
@@ -275,6 +275,26 @@ body {
 
 .auth-btn-primary:active {
     transform: translateY(-1px);
+}
+
+/* Links Mobile */
+.mobile-links {
+    display: none;
+    text-align: center;
+    margin-top: 2rem;
+    color: #666;
+}
+
+.mobile-links a {
+    color: #d6a35d;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.mobile-links a:hover {
+    color: #c8944d;
+    text-decoration: underline;
 }
 
 /* Lado Direito - Background Café */
@@ -318,6 +338,7 @@ body {
     background: linear-gradient(135deg, #8B4513 0%, #A0522D 50%, #654321 100%);
 }
 
+/* Logo como imagem - SEM XÍCARA */
 .auth-logo-container {
     position: absolute;
     top: 50px;
@@ -326,32 +347,25 @@ body {
 }
 
 .auth-logo {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: white;
-    text-decoration: none;
-    letter-spacing: 3px;
-    text-transform: lowercase;
-    position: relative;
+    display: block;
     transition: all 0.3s ease;
 }
 
-.auth-logo::before {
-    content: "☕";
-    margin-right: 10px;
-    font-size: 1.6rem;
-    display: inline-block;
-    animation: coffeeSteam 3s ease-in-out infinite;
-}
-
-@keyframes coffeeSteam {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-2px) scale(1.05); }
+.auth-logo img {
+    height: 40px;
+    width: auto;
+    display: block;
 }
 
 .auth-logo:hover {
     transform: translateY(-2px);
-    text-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+    filter: drop-shadow(0 4px 12px rgba(255, 255, 255, 0.3));
+}
+
+/* GARANTE QUE NÃO HAJA XÍCARA */
+.auth-logo::before {
+    content: none !important;
+    display: none !important;
 }
 
 .auth-right-content {
@@ -487,6 +501,10 @@ body {
         right: 30px;
     }
     
+    .auth-logo img {
+        height: 35px;
+    }
+    
     .auth-right-content {
         padding: 0 30px;
     }
@@ -510,6 +528,10 @@ body {
     
     .auth-form-container {
         padding: 0 30px;
+    }
+    
+    .mobile-links {
+        display: block;
     }
 }
 
@@ -562,8 +584,8 @@ body {
         right: 20px;
     }
     
-    .auth-logo {
-        font-size: 1.5rem;
+    .auth-logo img {
+        height: 30px;
     }
 }
 
@@ -584,7 +606,7 @@ body {
 .auth-btn-outline:focus,
 .social-btn:focus,
 .forgot-link:focus {
-    outline: 2px solid #E0B76F;
+    outline: 2px solid #d6a35d;
     outline-offset: 2px;
 }
 
