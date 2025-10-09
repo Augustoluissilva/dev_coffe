@@ -1,0 +1,461 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    background: #f5f5f5;
+}
+
+.auth-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    background: #ffffff;
+}
+
+/* Lado Esquerdo - Background Café */
+.auth-left {
+    flex: 1;
+    background: 
+        linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.5) 100%),
+        url('../img/login_cadas.jpeg') center/cover no-repeat,
+        #8B4513;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    color: white;
+    overflow: hidden;
+}
+
+/* Efeito de grãos de café flutuantes */
+.auth-left::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(139, 69, 19, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(160, 82, 45, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(101, 67, 33, 0.1) 0%, transparent 50%);
+    animation: grains 20s linear infinite;
+}
+
+@keyframes grains {
+    0% { transform: translateY(0px) rotate(0deg); }
+    100% { transform: translateY(-100px) rotate(360deg); }
+}
+
+/* Logo como imagem */
+.auth-logo-container {
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    z-index: 2;
+}
+
+.auth-logo {
+    display: block;
+    transition: all 0.3s ease;
+}
+
+.auth-logo img {
+    height: 40px;
+    width: auto;
+    display: block;
+}
+
+.auth-logo:hover {
+    transform: translateY(-2px);
+    filter: drop-shadow(0 4px 12px rgba(255, 255, 255, 0.3));
+}
+
+.auth-logo::before {
+    content: none !important;
+    display: none !important;
+}
+
+.auth-left-content {
+    text-align: center;
+    max-width: 450px;
+    padding: 0 50px;
+    z-index: 2;
+    position: relative;
+}
+
+.auth-left-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    letter-spacing: -1px;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.auth-left-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 3rem;
+    line-height: 1.6;
+    opacity: 0.9;
+    font-weight: 400;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.auth-btn-outline {
+    padding: 18px 45px;
+    border: 2px solid white;
+    background: transparent;
+    color: white;
+    text-decoration: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-btn-outline:hover {
+    background: white;
+    color: #8B4513;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(255, 255, 255, 0.3);
+}
+
+.auth-btn-outline:active {
+    transform: translateY(-1px);
+}
+
+/* Lado Direito - Formulário */
+.auth-right {
+    flex: 1;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Mancha de café decorativa */
+.coffee-splash {
+    position: absolute;
+    bottom: -150px;
+    right: -150px;
+    width: 500px;
+    height: 500px;
+    background: url('../img/mancha_cafe-removebg-preview.png') center/contain no-repeat;
+    opacity: 0.08;
+    z-index: 1;
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+.auth-form-container {
+    width: 100%;
+    max-width: 420px;
+    padding: 0 50px;
+    z-index: 2;
+}
+
+.auth-title {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #333;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+.auth-message {
+    padding: 14px 20px;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.auth-message.error {
+    background: #fff5f5;
+    color: #c53030;
+    border: 1px solid #fed7d7;
+}
+
+.auth-message.success {
+    background: #f0fff4;
+    color: #2d784d;
+    border: 1px solid #c6f6d5;
+}
+
+/* Botões Sociais - Ícones iguais ao login */
+.social-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.social-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid #d6a35d;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.social-btn::before {
+    content: '';
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: all 0.3s ease;
+}
+
+.social-btn.facebook::before {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23d6a35d" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>');
+}
+
+.social-btn.google::before {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23d6a35d" d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>');
+}
+
+.social-btn:hover {
+    background: #d6a35d;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(214, 163, 93, 0.3);
+}
+
+.social-btn:hover::before {
+    filter: brightness(0) invert(1);
+}
+
+/* Divisor - Estilo mais limpo como na imagem */
+.auth-divider {
+    text-align: center;
+    color: #666;
+    margin-bottom: 2.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* Formulário - Layout mais compacto */
+.auth-form {
+    margin-top: 0.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+    
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: #fafafa;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #d6a35d;
+    background: white;
+    box-shadow: 0 6px 20px rgba(214, 163, 93, 0.15);
+    
+}
+
+.form-input::placeholder {
+    color: #999;
+    font-weight: 400;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* Botão Registrar */
+.auth-btn-primary {
+    width: 100%;
+    padding: 16px;
+    background: #d6a35d;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-family: 'Montserrat', sans-serif;
+    margin-top: 0.5rem;
+}
+
+.auth-btn-primary:hover {
+    background: #c8944d;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(214, 163, 93, 0.4);
+}
+
+.auth-btn-primary:active {
+    transform: translateY(-1px);
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+    .auth-form-container,
+    .auth-left-content {
+        max-width: 380px;
+        padding: 0 40px;
+    }
+    
+    .auth-title {
+        font-size: 2.5rem;
+    }
+    
+    .auth-left-title {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .auth-container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+    }
+    
+    .auth-left {
+        order: 1;
+        flex: 0 0 40vh;
+        min-height: 40vh;
+        padding: 40px 0;
+    }
+    
+    .auth-right {
+        order: 2;
+        flex: 1;
+        min-height: 60vh;
+        padding: 40px 0;
+    }
+    
+    .auth-logo-container {
+        top: 30px;
+        left: 30px;
+    }
+    
+    .auth-logo img {
+        height: 35px;
+    }
+    
+    .auth-left-content {
+        padding: 0 30px;
+    }
+    
+    .auth-left-title {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .auth-left-subtitle {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .coffee-splash {
+        width: 300px;
+        height: 300px;
+        bottom: -80px;
+        right: -80px;
+    }
+    
+    .auth-form-container {
+        padding: 0 30px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-form-container,
+    .auth-left-content {
+        padding: 0 25px;
+    }
+    
+    .auth-title {
+        font-size: 2.2rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .auth-left-title {
+        font-size: 2rem;
+    }
+    
+    .auth-left-subtitle {
+        font-size: 1rem;
+    }
+    
+    .form-input {
+        padding: 14px 18px;
+    }
+    
+    .auth-btn-primary,
+    .auth-btn-outline {
+        padding: 14px;
+    }
+    
+    .coffee-splash {
+        width: 250px;
+        height: 250px;
+        bottom: -60px;
+        right: -60px;
+    }
+    
+    .auth-logo-container {
+        top: 20px;
+        left: 20px;
+    }
+    
+    .auth-logo img {
+        height: 30px;
+    }
+}
+
+/* Estados de foco para acessibilidade */
+.form-input:focus,
+.auth-btn-primary:focus,
+.auth-btn-outline:focus,
+.social-btn:focus {
+    outline: 2px solid #d6a35d;
+    outline-offset: 2px;
+}

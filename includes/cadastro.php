@@ -53,23 +53,23 @@ if($_POST){
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro - DevCoffee</title>
-    <link rel="stylesheet" href="../css/auth.css">
-    <style>
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/cadastro.css">
 </head>
 <body>
     <div class="auth-container">
         <!-- Lado Esquerdo - Background Café -->
         <div class="auth-left">
-            <a href="index.php" class="auth-logo">devcoffee</a>
+            <div class="auth-logo-container">
+                <a href="index.php" class="auth-logo">
+                    <img src="../img/devcoffee_logo.png" alt="Dev Coffee Logo">
+                </a>
+            </div>
             <div class="auth-left-content">
                 <h1 class="auth-left-title">Olá de volta!</h1>
-                <p class="auth-left-subtitle">Para se manter conectado conosco por gentileza logue com suas informações pessoais.</p>
+                <p class="auth-left-subtitle">Para se manter conectado conosco por gentileza logue com suas informações pessoais</p>
                 <a href="login.php" class="auth-btn-outline">LOGIN</a>
             </div>
         </div>
@@ -87,11 +87,11 @@ if($_POST){
                 <?php endif; ?>
 
                 <div class="social-buttons">
-                    <button class="social-btn">
-                        <img src="https://img.icons8.com/color/48/000000/facebook.png" alt="Facebook" class="social-icon">
+                    <button class="social-btn facebook" type="button" aria-label="Cadastrar com Facebook">
+                        <!-- Ícone via CSS -->
                     </button>
-                    <button class="social-btn">
-                        <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google" class="social-icon">
+                    <button class="social-btn google" type="button" aria-label="Cadastrar com Google">
+                        <!-- Ícone via CSS -->
                     </button>
                 </div>
 
@@ -99,11 +99,13 @@ if($_POST){
 
                 <form class="auth-form" method="POST" action="">
                     <div class="form-group">
-                        <input type="text" class="form-input" name="nome" placeholder="Nome Completo" value="<?php echo isset($_POST['nome']) ? $_POST['nome'] : ''; ?>" required>
+                        <input type="text" class="form-input" name="nome" placeholder="Nome" 
+                               value="<?php echo isset($_POST['nome']) ? htmlspecialchars($_POST['nome']) : ''; ?>" required>
                     </div>
 
                     <div class="form-group">
-                        <input type="email" class="form-input" name="email" placeholder="Email" value="<?php echo isset($_POST['email']) ? $_POST['email'] : ''; ?>" required>
+                        <input type="email" class="form-input" name="email" placeholder="Email" 
+                               value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" required>
                     </div>
 
                     <div class="form-group">
@@ -112,10 +114,12 @@ if($_POST){
 
                     <div class="form-row">
                         <div class="form-group">
-                            <input type="tel" class="form-input" name="telefone" placeholder="Telefone" value="<?php echo isset($_POST['telefone']) ? $_POST['telefone'] : ''; ?>" required>
+                            <input type="tel" class="form-input" name="telefone" placeholder="Telefone" 
+                                   value="<?php echo isset($_POST['telefone']) ? htmlspecialchars($_POST['telefone']) : ''; ?>" required>
                         </div>
                         <div class="form-group">
-                            <input type="text" class="form-input" name="cpf" placeholder="CPF" value="<?php echo isset($_POST['cpf']) ? $_POST['cpf'] : ''; ?>" required>
+                            <input type="text" class="form-input" name="cpf" placeholder="CPF" 
+                                   value="<?php echo isset($_POST['cpf']) ? htmlspecialchars($_POST['cpf']) : ''; ?>" required>
                         </div>
                     </div>
 
