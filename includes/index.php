@@ -11,7 +11,7 @@
     <!-- Header -->
     <header>
         <div class="container header-container">
-            <img src="logo.png" alt="Logo DEV COFFEE" class="logo">
+            <img src="../img/devcoffee_logo.png" alt="Logo DEV COFFEE" class="logo">
             
             <nav>
                 <ul>
@@ -23,8 +23,8 @@
             </nav>
             
             <div class="auth-buttons">
-                <a href="#">Login</a>
-                <a href="#">Cadastro</a>
+                <a href="login.php">Login</a>
+                <a href="cadastro.php">Cadastro</a>
             </div>
             
             <div class="mobile-menu">

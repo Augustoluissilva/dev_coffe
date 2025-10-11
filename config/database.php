@@ -1,7 +1,7 @@
 <?php
 class Database {
     private $host = 'localhost';
-    private $db_name = 'db_devcoffe';
+    private $db_name = 'db_cafeteria';
     private $username = 'root';
     private $password = '';
     public $conn;
