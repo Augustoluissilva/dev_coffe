@@ -100,7 +100,7 @@ if($_POST){
                                required autocomplete="current-password">
                     </div>
 
-                    <a href="recuperar-senha.php" class="forgot-link">Esqueceu a senha?</a>
+                    <a href="redefinir.php" class="forgot-link">Esqueceu a senha?</a>
 
                     <button type="submit" class="auth-btn-primary" id="login-btn">
                         LOGIN
