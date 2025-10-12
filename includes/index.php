@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DEV COFFEE - Café Premium</title>
-    <link rel="stylesheet" href="CSS/index.css">
+    <link rel="stylesheet" href="../css/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <!-- Header -->
     <header>
         <div class="container header-container">
-            <img src="logo.png" alt="Logo DEV COFFEE" class="logo">
+            <img src="../img/devcoffee_logo.png" alt="Logo DEV COFFEE" class="logo">
             
             <nav>
                 <ul>
