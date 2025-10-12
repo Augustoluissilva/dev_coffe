@@ -1,11 +1,16 @@
 <?php
 session_start();
 
-// Verificar se usuário já está logado
-if(isset($_SESSION['usuario_id'])){
-    header("Location: index.php");
-    exit();
-}
+// Incluir sistema de autenticação
+include_once "../includes/auth.php";
+
+// Verificar se usuário já está logado (usando a nova função)
+redirecionarSeLogado();
+
+// Headers para evitar cache
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
 
 include('../config/database.php');
 include('../models/Usuario.php');
@@ -23,9 +28,13 @@ if($_POST){
     $usuario->senha = $senha;
 
     if($usuario->login()){
+        // Sistema de autenticação atualizado
         $_SESSION['usuario_id'] = $usuario->id;
         $_SESSION['usuario_nome'] = $usuario->nome;
         $_SESSION['usuario_tipo'] = $usuario->tipo;
+        $_SESSION['usuario_email'] = $usuario->email;
+        $_SESSION['logado'] = true;
+        $_SESSION['ultimo_acesso'] = time();
         
         header("Location: home.php");
         exit();
@@ -100,7 +109,7 @@ if($_POST){
                                required autocomplete="current-password">
                     </div>
 
-                    <a href="recuperar-senha.php" class="forgot-link">Esqueceu a senha?</a>
+                    <a href="redefinir.php" class="forgot-link">Esqueceu a senha?</a>
 
                     <button type="submit" class="auth-btn-primary" id="login-btn">
                         LOGIN
@@ -136,6 +145,16 @@ if($_POST){
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Prevenir navegação com botão voltar após logout
+            window.history.pushState(null, null, window.location.href);
+            window.onpopstate = function() {
+                window.history.go(1);
+            };
+
+            // Limpar qualquer dado residual no localStorage
+            localStorage.removeItem('userData');
+            sessionStorage.clear();
+
             // Fallback para imagem de background
             const authRight = document.querySelector('.auth-right');
             const testImage = new Image();
@@ -279,6 +298,13 @@ if($_POST){
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             document.documentElement.style.setProperty('--animation-duration', '0.01ms');
         }
+
+        // Prevenir que a página seja armazenada em cache
+        window.onpageshow = function(event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        };
     </script>
 
     <!-- Fallback para navegadores muito antigos -->

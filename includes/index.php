@@ -23,8 +23,8 @@
             </nav>
             
             <div class="auth-buttons">
-                <a href="#">Login</a>
-                <a href="#">Cadastro</a>
+                <a href="login.php">Login</a>
+                <a href="cadastro.php">Cadastro</a>
             </div>
             
             <div class="mobile-menu">
