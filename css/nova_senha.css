@@ -1,0 +1,320 @@
+/* ========== GOOGLE FONTS ========== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* ========== LAYOUT BASE ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.auth-split {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+}
+
+/* ========== LADO DO FORMULÁRIO ========== */
+.auth-form-side {
+    flex: 1;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 40px;
+    border-right: 1px solid #e0e0e0;
+}
+
+.auth-logo {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+}
+
+.auth-logo img {
+    height: 40px;
+    width: auto;
+}
+
+.form-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.auth-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.auth-subtitle {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+/* ========== CAMPOS E BOTÃO ========== */
+.form-group {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.form-input {
+    width: 100%;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 10px;
+    background-color: #E5E5E5;
+    font-size: 16px;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.form-input:focus {
+    outline: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    background-color: #f0f0f0;
+}
+
+.form-input::placeholder {
+    color: #888;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 25px;
+    background-color: #E5A353;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+    
+}
+
+.btn-primary:hover {
+    background-color: #d89445;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(229, 163, 83, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(229, 163, 83, 0.3);
+}
+
+.auth-links {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.auth-links a {
+    color: #E5A353;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.auth-links a:hover {
+    color: #d89445;
+    text-decoration: underline;
+}
+
+/* ========== LADO DA IMAGEM ========== */
+.auth-image-side {
+    flex: 1;
+    background: 
+        linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+        url('../img/login_cadas.jpeg') center/cover no-repeat;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 40px;
+    text-align: center;
+}
+
+.illustration-image {
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.illustration-image img {
+    max-width: 280px; /* Diminuído de 350px para 280px */
+    width: 100%;
+    height: auto;
+}
+
+.illustration-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 15px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.illustration-subtitle {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    max-width: 400px;
+    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* ========== ELEMENTOS DECORATIVOS ========== */
+.coffee-stain {
+    position: absolute;
+    bottom: -50px;
+    left: -50px;
+    width: 200px;
+    height: 200px;
+    background: 
+        radial-gradient(circle at 30% 30%, rgba(101, 67, 33, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 70% 70%, rgba(101, 67, 33, 0.08) 0%, transparent 50%);
+    border-radius: 50%;
+    opacity: 0.7;
+    z-index: 1;
+}
+
+/* ========== MENSAGENS DO SISTEMA ========== */
+.message {
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.msg-error {
+    background-color: #ffe6e6;
+    color: #d63031;
+    border: 1px solid #ff7675;
+}
+
+.msg-success {
+    background-color: #e6f7e6;
+    color: #27ae60;
+    border: 1px solid #2ecc71;
+}
+
+.msg-success a {
+    color: #E5A353;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.msg-success a:hover {
+    text-decoration: underline;
+}
+
+/* ========== RESPONSIVIDADE ========== */
+@media (max-width: 768px) {
+    .auth-split {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+    }
+    
+    .auth-form-side {
+        flex: none;
+        min-height: 60vh;
+        border-right: none;
+        border-bottom: 1px solid #e0e0e0;
+        padding: 30px 20px;
+    }
+    
+    .auth-image-side {
+        flex: none;
+        min-height: 40vh;
+        padding: 30px 20px;
+    }
+    
+    .auth-title {
+        font-size: 28px;
+        text-align: center;
+    }
+    
+    .auth-subtitle {
+        text-align: center;
+    }
+    
+    .auth-logo {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin-bottom: 20px;
+    }
+    
+    .form-container {
+        max-width: 100%;
+    }
+    
+    .illustration-image img {
+        max-width: 200px; /* Diminuído de 250px para 200px */
+    }
+    
+    .illustration-title {
+        font-size: 24px;
+    }
+    
+    .illustration-subtitle {
+        font-size: 14px;
+    }
+    
+    .coffee-stain {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-title {
+        font-size: 24px;
+    }
+    
+    .auth-subtitle {
+        font-size: 14px;
+    }
+    
+    .form-input {
+        padding: 12px 15px;
+    }
+    
+    .btn-primary {
+        padding: 12px;
+    }
+    
+    .illustration-image img {
+        max-width: 160px; /* Diminuído de 200px para 160px */
+    }
+    
+    .illustration-title {
+        font-size: 20px;
+    }
+    
+    .illustration-subtitle {
+        font-size: 13px;
+    }
+}

@@ -18,145 +18,142 @@ include_once "phpmailer_config.php";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DevCoffee - Recuperar Senha</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #6f4e37 0%, #8b6b4d 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .container { background: white; border-radius: 15px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); overflow: hidden; width: 100%; max-width: 450px; }
-        .header { background: #6f4e37; color: white; padding: 30px 20px; text-align: center; }
-        .header h1 { font-size: 28px; margin-bottom: 10px; }
-        .content { padding: 30px; }
-        .message { padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; }
-        .msg-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .msg-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .msg-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
-        input[type="email"] { width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; transition: border-color 0.3s ease; }
-        input[type="email"]:focus { outline: none; border-color: #6f4e37; }
-        .btn { width: 100%; padding: 14px; background: #6f4e37; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.3s ease; }
-        .btn:hover { background: #5a3e2b; }
-        .links { text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0; }
-        .links a { color: #6f4e37; text-decoration: none; font-weight: bold; transition: color 0.3s ease; }
-        .links a:hover { color: #5a3e2b; text-decoration: underline; }
-        .coffee-icon { font-size: 40px; margin-bottom: 10px; }
-    </style>
+    <link rel="stylesheet" href="../css/redefinir.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="coffee-icon">☕</div>
-            <h1>DevCoffee</h1>
-            <p>Recuperação de Senha</p>
+    <div class="auth-split">
+        <!-- Lado esquerdo - Imagem com texto -->
+        <div class="auth-image-side">
+            <div class="image-content">
+                <div class="illustration-image">
+                    <img src="../img/redefinir.png" alt="Recuperação de senha">
+                </div>
+                <h2 class="illustration-title">Problemas com a senha?</h2>
+                <p class="illustration-subtitle">Não se preocupe! Envie seu email e nós te ajudaremos a recuperar o acesso à sua conta.</p>
+            </div>
+            
+            <!-- Mancha de café decorativa -->
+            <div class="coffee-stain"></div>
         </div>
 
-        <div class="content">
-            <?php
-            // Verificar se o formulário foi enviado
-            if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['SendRecupSenha'])){
-                
-                $email = trim($_POST['usuario'] ?? '');
-                
-                // Validar email
-                if(empty($email)) {
-                    $_SESSION['msg'] = "<div class='message msg-error'>❌ Por favor, digite seu email!</div>";
-                } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    $_SESSION['msg'] = "<div class='message msg-error'>❌ Por favor, digite um email válido!</div>";
-                } else {
-                    try {
-                        // Verificar se o email existe no banco
-                        $query_usuario = "SELECT id_usuario, nome_completo, email FROM usuarios WHERE email = :email LIMIT 1";
-                        $stmt = $db->prepare($query_usuario);
-                        $stmt->bindParam(':email', $email);
-                        $stmt->execute();
-                        
-                        if($stmt->rowCount() > 0) {
-                            $row_usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+        <!-- Lado direito - Formulário -->
+        <div class="auth-form-side">
+            <!-- Logo no canto superior direito -->
+            <div class="auth-logo">
+                <img src="../img/devcoffee_logo.png" alt="DevCoffee Logo">
+            </div>
+
+            <div class="form-container">
+                <h1 class="auth-title">Recuperação de senha</h1>
+                <p class="auth-subtitle">Informe seu email para recuperar sua senha:</p>
+
+                <?php
+                // Verificar se o formulário foi enviado
+                if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['SendRecupSenha'])){
+                    
+                    $email = trim($_POST['usuario'] ?? '');
+                    
+                    // Validar email
+                    if(empty($email)) {
+                        $_SESSION['msg'] = "<div class='message msg-error'>❌ Por favor, digite seu email!</div>";
+                    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                        $_SESSION['msg'] = "<div class='message msg-error'>❌ Por favor, digite um email válido!</div>";
+                    } else {
+                        try {
+                            // Verificar se o email existe no banco
+                            $query_usuario = "SELECT id_usuario, nome_completo, email FROM usuarios WHERE email = :email LIMIT 1";
+                            $stmt = $db->prepare($query_usuario);
+                            $stmt->bindParam(':email', $email);
+                            $stmt->execute();
                             
-                            // Gerar token
-                            $token = bin2hex(random_bytes(25));
-                            $expiracao = date('Y-m-d H:i:s', strtotime('+1 hour'));
-                            
-                            // Verificar se as colunas de token existem, se não, criar
-                            $check_columns = $db->query("SHOW COLUMNS FROM usuarios LIKE 'token_senha'");
-                            if($check_columns->rowCount() == 0) {
-                                $db->exec("ALTER TABLE usuarios ADD COLUMN token_senha VARCHAR(100) NULL");
-                            }
-                            
-                            $check_columns = $db->query("SHOW COLUMNS FROM usuarios LIKE 'token_expiracao'");
-                            if($check_columns->rowCount() == 0) {
-                                $db->exec("ALTER TABLE usuarios ADD COLUMN token_expiracao DATETIME NULL");
-                            }
-                            
-                            // Salvar token no banco
-                            $query_token = "UPDATE usuarios 
-                                           SET token_senha = :token, 
-                                               token_expiracao = :expiracao 
-                                           WHERE email = :email";
-                            
-                            $stmt_token = $db->prepare($query_token);
-                            $stmt_token->bindParam(':token', $token);
-                            $stmt_token->bindParam(':expiracao', $expiracao);
-                            $stmt_token->bindParam(':email', $email);
-                            
-                            if($stmt_token->execute()) {
-                                // Enviar email
-                                $nome_usuario = $row_usuario['nome_completo'] ?? $row_usuario['nome'] ?? 'Usuário';
+                            if($stmt->rowCount() > 0) {
+                                $row_usuario = $stmt->fetch(PDO::FETCH_ASSOC);
                                 
-                                // DEBUG: Mostrar informações antes do envio
-                                echo "<!-- DEBUG: Tentando enviar para: $email -->";
+                                // Gerar token
+                                $token = bin2hex(random_bytes(25));
+                                $expiracao = date('Y-m-d H:i:s', strtotime('+1 hour'));
                                 
-                                if(enviarEmailRecuperacao($email, $nome_usuario, $token)) {
-                                    $_SESSION['msg'] = "<div class='message msg-success'>✅ Email enviado com sucesso!</div>";
-                                    $_SESSION['msg'] .= "<div class='message msg-info'>📧 Verifique sua caixa de entrada e a pasta de spam.</div>";
+                                // Verificar se as colunas de token existem, se não, criar
+                                $check_columns = $db->query("SHOW COLUMNS FROM usuarios LIKE 'token_senha'");
+                                if($check_columns->rowCount() == 0) {
+                                    $db->exec("ALTER TABLE usuarios ADD COLUMN token_senha VARCHAR(100) NULL");
+                                }
+                                
+                                $check_columns = $db->query("SHOW COLUMNS FROM usuarios LIKE 'token_expiracao'");
+                                if($check_columns->rowCount() == 0) {
+                                    $db->exec("ALTER TABLE usuarios ADD COLUMN token_expiracao DATETIME NULL");
+                                }
+                                
+                                // Salvar token no banco
+                                $query_token = "UPDATE usuarios 
+                                               SET token_senha = :token, 
+                                                   token_expiracao = :expiracao 
+                                               WHERE email = :email";
+                                
+                                $stmt_token = $db->prepare($query_token);
+                                $stmt_token->bindParam(':token', $token);
+                                $stmt_token->bindParam(':expiracao', $expiracao);
+                                $stmt_token->bindParam(':email', $email);
+                                
+                                if($stmt_token->execute()) {
+                                    // Enviar email
+                                    $nome_usuario = $row_usuario['nome_completo'] ?? $row_usuario['nome'] ?? 'Usuário';
+                                    
+                                    // DEBUG: Mostrar informações antes do envio
+                                    echo "<!-- DEBUG: Tentando enviar para: $email -->";
+                                    
+                                    if(enviarEmailRecuperacao($email, $nome_usuario, $token)) {
+                                        $_SESSION['msg'] = "<div class='message msg-success'>✅ Email enviado com sucesso!</div>";
+                                        $_SESSION['msg'] .= "<div class='message msg-info'>📧 Verifique sua caixa de entrada e a pasta de spam.</div>";
+                                    } else {
+                                        $_SESSION['msg'] = "<div class='message msg-error'>❌ Erro ao enviar email. Tente novamente.</div>";
+                                    }
                                 } else {
-                                    $_SESSION['msg'] = "<div class='message msg-error'>❌ Erro ao enviar email. Tente novamente.</div>";
+                                    $_SESSION['msg'] = "<div class='message msg-error'>❌ Erro ao processar solicitação!</div>";
                                 }
                             } else {
-                                $_SESSION['msg'] = "<div class='message msg-error'>❌ Erro ao processar solicitação!</div>";
+                                $_SESSION['msg'] = "<div class='message msg-error'>❌ Nenhum usuário encontrado com este email!</div>";
                             }
-                        } else {
-                            $_SESSION['msg'] = "<div class='message msg-error'>❌ Nenhum usuário encontrado com este email!</div>";
+                        } catch (Exception $e) {
+                            $_SESSION['msg'] = "<div class='message msg-error'>❌ Erro: " . $e->getMessage() . "</div>";
                         }
-                    } catch (Exception $e) {
-                        $_SESSION['msg'] = "<div class='message msg-error'>❌ Erro: " . $e->getMessage() . "</div>";
                     }
+                    
+                    // Redirecionar para evitar reenvio
+                    header("Location: " . $_SERVER['PHP_SELF']);
+                    exit();
                 }
-                
-                // Redirecionar para evitar reenvio
-                header("Location: " . $_SERVER['PHP_SELF']);
-                exit();
-            }
 
-            // Exibir mensagens
-            if (isset($_SESSION['msg'])) {
-                echo $_SESSION['msg'];
-                unset($_SESSION['msg']);
-            }
-            ?>
+                // Exibir mensagens
+                if (isset($_SESSION['msg'])) {
+                    echo $_SESSION['msg'];
+                    unset($_SESSION['msg']);
+                }
+                ?>
 
-            <form action="" method="POST">
-                <div class="form-group">
-                    <label for="email">Digite seu email:</label>
-                    <input type="email" 
-                           name="usuario" 
-                           id="email"
-                           placeholder="seu.email@exemplo.com" 
-                           value="<?php echo isset($_POST['usuario']) ? htmlspecialchars($_POST['usuario']) : ''; ?>" 
-                           required
-                           autocomplete="email">
+                <form action="" method="POST">
+                    <div class="form-group">
+                        <input type="email" 
+                               class="form-input"
+                               name="usuario" 
+                               placeholder="Email" 
+                               value="<?php echo isset($_POST['usuario']) ? htmlspecialchars($_POST['usuario']) : ''; ?>" 
+                               required
+                               autocomplete="email">
+                    </div>
+
+                    <button type="submit" name="SendRecupSenha" class="btn-primary">
+                        ENVIAR
+                    </button>
+                </form>
+
+                <div class="auth-links">
+                    <a href="login.php">← Voltar para o login</a>
                 </div>
-
-                <button type="submit" name="SendRecupSenha" class="btn">
-                    🔐 Enviar Link de Recuperação
-                </button>
-            </form>
-
-            <div class="links">
-                <p>
-                    Lembrou a senha? <a href="login.php">Faça login</a><br>
-                    Não tem conta? <a href="cadastro.php">Cadastre-se</a>
-                </p>
             </div>
+
+            <!-- Mancha de café decorativa -->
+            <div class="coffee-stain"></div>
         </div>
     </div>
 </body>
