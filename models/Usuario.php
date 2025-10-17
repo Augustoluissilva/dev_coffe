@@ -18,6 +18,7 @@ class Usuario {
     public $estado;
     public $cep;
     public $tipo;
+    public $google_id;
 
     public function __construct($db) {
         $this->conn = $db;
@@ -66,6 +67,51 @@ class Usuario {
         return false;
     }
 
+    // Método para cadastrar com Google
+    public function cadastrarComGoogle() {
+        try {
+            // Verificar se email já existe
+            if ($this->emailExiste()) {
+                return "email_existe";
+            }
+
+            // Preparar query para cadastro com Google
+            $query = "INSERT INTO " . $this->table_name . " 
+                     SET nome_completo=:nome, email=:email, senha=:senha, 
+                         google_id=:google_id, telefone=:telefone, cpf=:cpf";
+            
+            $stmt = $this->conn->prepare($query);
+
+            // Limpar dados
+            $this->nome = htmlspecialchars(strip_tags($this->nome));
+            $this->email = htmlspecialchars(strip_tags($this->email));
+            $this->google_id = htmlspecialchars(strip_tags($this->google_id));
+
+            // Hash da senha (senha aleatória para contas Google)
+            if (empty($this->senha)) {
+                $this->senha = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
+            }
+
+            // Bind parameters
+            $stmt->bindParam(":nome", $this->nome);
+            $stmt->bindParam(":email", $this->email);
+            $stmt->bindParam(":senha", $this->senha);
+            $stmt->bindParam(":google_id", $this->google_id);
+            $stmt->bindParam(":telefone", $this->telefone);
+            $stmt->bindParam(":cpf", $this->cpf);
+
+            if($stmt->execute()) {
+                $this->id = $this->conn->lastInsertId();
+                return true;
+            }
+            return false;
+            
+        } catch(PDOException $exception) {
+            error_log("Erro ao cadastrar com Google: " . $exception->getMessage());
+            return false;
+        }
+    }
+
     public function login() {
         // Query mais genérica - selecionar todas as colunas
         $query = "SELECT * FROM " . $this->table_name . " 
@@ -84,6 +130,7 @@ class Usuario {
                 $this->id = $this->encontrarChavePrimaria($row);
                 $this->nome = $row['nome_completo'] ?? $row['nome'] ?? '';
                 $this->tipo = $row['tipo'] ?? 'cliente';
+                $this->google_id = $row['google_id'] ?? '';
                 
                 // Atualizar último login
                 $this->atualizarUltimoLogin();
@@ -92,6 +139,112 @@ class Usuario {
             }
         }
         return false;
+    }
+
+    // Método para login com Google
+    public function loginComGoogle($google_id) {
+        $query = "SELECT * FROM " . $this->table_name . " 
+                 WHERE google_id = :google_id AND ativo = 1";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":google_id", $google_id);
+        $stmt->execute();
+
+        if($stmt->rowCount() == 1) {
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Encontrar a chave primária automaticamente
+            $this->id = $this->encontrarChavePrimaria($row);
+            $this->nome = $row['nome_completo'] ?? $row['nome'] ?? '';
+            $this->email = $row['email'] ?? '';
+            $this->tipo = $row['tipo'] ?? 'cliente';
+            $this->google_id = $row['google_id'] ?? '';
+            
+            // Atualizar último login
+            $this->atualizarUltimoLogin();
+            
+            return true;
+        }
+        return false;
+    }
+
+    // Método para buscar usuário por email (incluindo Google ID)
+    public function buscarPorEmail() {
+        $query = "SELECT * FROM " . $this->table_name . " 
+                 WHERE email = :email AND ativo = 1";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":email", $this->email);
+        $stmt->execute();
+
+        if($stmt->rowCount() == 1) {
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Encontrar a chave primária automaticamente
+            $this->id = $this->encontrarChavePrimaria($row);
+            $this->nome = $row['nome_completo'] ?? $row['nome'] ?? '';
+            $this->email = $row['email'] ?? '';
+            $this->senha = $row['senha'] ?? '';
+            $this->telefone = $row['telefone'] ?? '';
+            $this->cpf = $row['cpf'] ?? '';
+            $this->tipo = $row['tipo'] ?? 'cliente';
+            $this->google_id = $row['google_id'] ?? '';
+            
+            return true;
+        }
+        return false;
+    }
+
+    // Método para buscar usuário por Google ID
+    public function buscarPorGoogleId($google_id) {
+        $query = "SELECT * FROM " . $this->table_name . " 
+                 WHERE google_id = :google_id AND ativo = 1";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":google_id", $google_id);
+        $stmt->execute();
+
+        if($stmt->rowCount() == 1) {
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Encontrar a chave primária automaticamente
+            $this->id = $this->encontrarChavePrimaria($row);
+            $this->nome = $row['nome_completo'] ?? $row['nome'] ?? '';
+            $this->email = $row['email'] ?? '';
+            $this->senha = $row['senha'] ?? '';
+            $this->telefone = $row['telefone'] ?? '';
+            $this->cpf = $row['cpf'] ?? '';
+            $this->tipo = $row['tipo'] ?? 'cliente';
+            $this->google_id = $row['google_id'] ?? '';
+            
+            return true;
+        }
+        return false;
+    }
+
+    // Método para vincular conta Google a usuário existente
+    public function vincularGoogle($user_id, $google_id) {
+        $query = "UPDATE " . $this->table_name . " 
+                 SET google_id = :google_id 
+                 WHERE id = :id OR usuario = :id OR user_id = :id OR codigo = :id";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":google_id", $google_id);
+        $stmt->bindParam(":id", $user_id);
+
+        return $stmt->execute();
+    }
+
+    // Método para verificar se Google ID já existe
+    public function googleIdExiste($google_id) {
+        $query = "SELECT COUNT(*) as total FROM " . $this->table_name . " 
+                 WHERE google_id = :google_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":google_id", $google_id);
+        $stmt->execute();
+        
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'] > 0;
     }
 
     private function encontrarChavePrimaria($row) {
@@ -180,6 +333,7 @@ class Usuario {
             $this->estado = $row['estado'] ?? '';
             $this->cep = $row['cep'] ?? '';
             $this->tipo = $row['tipo'] ?? 'cliente';
+            $this->google_id = $row['google_id'] ?? '';
             
             return true;
         }

@@ -54,6 +54,11 @@ if($_POST){
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/login.css">
+    
+    <!-- Scripts para Google Login -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <style>
         /* Fallback inline caso o CSS externo não carregue */
         .fallback-loading {
@@ -63,6 +68,38 @@ if($_POST){
             height: 100vh;
             background: #f5f5f5;
             font-family: 'Montserrat', sans-serif;
+        }
+        
+        /* Estilos para o botão do Google */
+        .google-login-container {
+            display: flex;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        
+        .auth-divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            color: #666;
+            position: relative;
+        }
+        
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: #ddd;
+        }
+        
+        .auth-divider::before {
+            left: 0;
+        }
+        
+        .auth-divider::after {
+            right: 0;
         }
     </style>
 </head>
@@ -86,13 +123,25 @@ if($_POST){
                     </div>
                 <?php endif; ?>
 
-                <div class="social-buttons">
-                    <button class="social-btn facebook" type="button" aria-label="Login com Facebook">
-                        <!-- Ícone via CSS -->
-                    </button>
-                    <button class="social-btn google" type="button" aria-label="Login com Google">
-                        <!-- Ícone via CSS -->
-                    </button>
+                <!-- Botão de Login com Google -->
+                <div class="google-login-container">
+                    <div id="g_id_onload"
+                         data-client_id="299295953821-nqbqqb8va16klodnvebgdja6h40mogc5.apps.googleusercontent.com"
+                         data-context="signin"
+                         data-ux_mode="popup"
+                         data-callback="handleGoogleLogin"
+                         data-auto_prompt="false">
+                    </div>
+
+                    <div class="g_id_signin"
+                         data-type="standard"
+                         data-shape="rectangular"
+                         data-theme="outline"
+                         data-text="signin_with"
+                         data-size="large"
+                         data-logo_alignment="left"
+                         data-width="300">
+                    </div>
                 </div>
 
                 <p class="auth-divider">ou use sua conta</p>
@@ -144,6 +193,51 @@ if($_POST){
     </div>
 
     <script>
+        // Função para lidar com o login do Google
+        function handleGoogleLogin(response) {
+            console.log('Resposta do Google:', response);
+            
+            // Enviar o token para o servidor para validação
+            fetch('../api/google-login.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    credential: response.credential,
+                    client_id: response.clientId 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Login bem-sucedido!',
+                        text: 'Você foi autenticado com sua conta Google.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = 'home.php';
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro no login',
+                        text: data.message || 'Erro ao fazer login com Google.'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: 'Erro de conexão. Tente novamente.'
+                });
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             // Prevenir navegação com botão voltar após logout
             window.history.pushState(null, null, window.location.href);
