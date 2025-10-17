@@ -25,7 +25,7 @@ if (!isset($_SESSION['usuario_id'])) {
     // header("Location: login.php"); // Descomentado apenas se login for obrigatório
     // exit();
 }
-$usuario_nome = isset($_SESSION['usuario_nome']) ? $_SESSION['usuario_nome'] : 'Visitante';
+$usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['usuario_nome']) : 'Visitante';
 ?>
 
 <!DOCTYPE html>
@@ -113,7 +113,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? $_SESSION['usuario_nome'] : '
                                 <?php if (!empty($product['imagem']) && file_exists('../' . $product['imagem'])): ?>
                                     <img src="<?= htmlspecialchars('../' . $product['imagem']) ?>" 
                                          alt="<?= htmlspecialchars($product['nome']) ?>"
-                                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjhGOEY4Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRlIiBkeT0iLjNlbSI+SW1hZ2VtIG7Do28gY2FycmVnYWRhPC90ZXh0Pjwvc3ZnPg=='">
+                                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjhGOEY4Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbSBuw6NvIGNhcnJlZ2FkYTwvdGV4dD48L3N2Zz4='">
                                 <?php else: ?>
                                     <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#999;flex-direction:column;gap:10px;">
                                         <i class="fas fa-image" style="font-size:48px;"></i>
@@ -384,5 +384,8 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? $_SESSION['usuario_nome'] : '
 </html>
 
 <?php
-if ($conn) $conn->close();
+// Fechar a conexão com o banco de dados
+if (isset($conn) && $conn instanceof mysqli) {
+    $conn->close();
+}
 ?>
