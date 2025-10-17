@@ -7,7 +7,7 @@ require_once '../models/Usuario.php';
 header('Content-Type: application/json');
 
 // Configurações do Google
-$CLIENT_ID = "299295953821-nqbqqb8va16klodnvebgdja6h40mogc5.apps.googleusercontent.com";
+$CLIENT_ID = "154360656663-bftehkt4m59kv8r3sb94licc2b6nso43.apps.googleusercontent.com";
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Método não permitido']);
@@ -22,46 +22,46 @@ if (empty($credential)) {
     exit;
 }
 
-// Verificar e decodificar o token JWT
-$tokenParts = explode('.', $credential);
-if (count($tokenParts) !== 3) {
-    echo json_encode(['success' => false, 'message' => 'Token inválido']);
-    exit;
-}
-
-$payload = base64_decode(str_replace(['-', '_'], ['+', '/'], $tokenParts[1]));
-$userData = json_decode($payload, true);
-
-// Verificar se o token é válido
-if (!$userData || $userData['aud'] !== $CLIENT_ID) {
-    echo json_encode(['success' => false, 'message' => 'Token inválido']);
-    exit;
-}
-
-// Verificar expiração
-if (isset($userData['exp']) && $userData['exp'] < time()) {
-    echo json_encode(['success' => false, 'message' => 'Token expirado']);
-    exit;
-}
-
-// Dados do usuário do Google
-$googleId = $userData['sub'];
-$email = $userData['email'];
-$nome = $userData['name'] ?? '';
-$foto = $userData['picture'] ?? '';
-
 try {
+    // Decodificar o token JWT do Google
+    $tokenParts = explode('.', $credential);
+    if (count($tokenParts) !== 3) {
+        throw new Exception('Token JWT inválido');
+    }
+
+    $payload = base64_decode(str_replace(['-', '_'], ['+', '/'], $tokenParts[1]));
+    $userData = json_decode($payload, true);
+
+    if (!$userData) {
+        throw new Exception('Não foi possível decodificar o token');
+    }
+
+    // Verificar se o token é válido
+    if ($userData['aud'] !== $CLIENT_ID) {
+        throw new Exception('Token não é válido para este aplicativo');
+    }
+
+    // Verificar expiração
+    if (isset($userData['exp']) && $userData['exp'] < time()) {
+        throw new Exception('Token expirado');
+    }
+
+    // Dados do usuário do Google
+    $googleId = $userData['sub'];
+    $email = $userData['email'];
+    $nome = $userData['name'] ?? 'Usuário Google';
+
     $database = new Database();
     $db = $database->getConnection();
     $usuario = new Usuario($db);
-    
+
     // Verificar se o usuário já existe
     $usuario->email = $email;
     
-    if ($usuario->buscarPorEmail()) {
-        // Usuário já existe - fazer login automaticamente
-        $_SESSION['usuario_id'] = $usuario->id;
-        $_SESSION['usuario_nome'] = $usuario->nome;
+    if ($usuario->buscarPorEmail() || $usuario->buscarPorGoogleId($googleId)) {
+        // Usuário já existe - fazer login
+        $_SESSION['usuario_id'] = $usuario->id_usuario;
+        $_SESSION['usuario_nome'] = $usuario->nome_completo;
         $_SESSION['usuario_tipo'] = $usuario->tipo;
         $_SESSION['usuario_email'] = $usuario->email;
         $_SESSION['logado'] = true;
@@ -69,24 +69,19 @@ try {
         
         echo json_encode([
             'success' => true, 
-            'message' => 'Login realizado com sucesso! Sua conta já existia no sistema.'
+            'message' => 'Login realizado com sucesso! Sua conta já existe.'
         ]);
     } else {
-        // Usuário não existe - criar nova conta com Google
-        $usuario->nome = $nome;
+        // Criar nova conta com Google
+        $usuario->nome_completo = $nome;
         $usuario->email = $email;
-        $usuario->senha = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT); // Senha aleatória
-        $usuario->tipo = 'usuario'; // Tipo padrão
         $usuario->google_id = $googleId;
-        
-        // Campos opcionais para cadastro com Google
-        $usuario->telefone = ''; // Pode ser preenchido depois
-        $usuario->cpf = ''; // Pode ser preenchido depois
-        
+        $usuario->telefone = '';
+        $usuario->cpf = '';
+
         if ($usuario->cadastrarComGoogle()) {
-            // Login após criar conta
-            $_SESSION['usuario_id'] = $usuario->id;
-            $_SESSION['usuario_nome'] = $usuario->nome;
+            $_SESSION['usuario_id'] = $usuario->id_usuario;
+            $_SESSION['usuario_nome'] = $usuario->nome_completo;
             $_SESSION['usuario_tipo'] = $usuario->tipo;
             $_SESSION['usuario_email'] = $usuario->email;
             $_SESSION['logado'] = true;
@@ -94,12 +89,12 @@ try {
             
             echo json_encode([
                 'success' => true, 
-                'message' => 'Conta criada com sucesso com sua conta Google!'
+                'message' => 'Conta criada com sucesso com Google!'
             ]);
         } else {
             echo json_encode([
                 'success' => false, 
-                'message' => 'Erro ao criar conta com Google. Tente novamente.'
+                'message' => 'Erro ao criar conta com Google.'
             ]);
         }
     }
@@ -107,6 +102,7 @@ try {
     error_log('Erro no cadastro com Google: ' . $e->getMessage());
     echo json_encode([
         'success' => false, 
-        'message' => 'Erro interno do servidor: ' . $e->getMessage()
+        'message' => 'Erro: ' . $e->getMessage()
     ]);
 }
+?>

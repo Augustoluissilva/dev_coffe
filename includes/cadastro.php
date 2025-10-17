@@ -18,7 +18,7 @@ $mensagem = "";
 $tipo_mensagem = "";
 
 if($_POST){
-    $usuario->nome = $_POST['nome'];
+    $usuario->nome_completo = $_POST['nome'];
     $usuario->email = $_POST['email'];
     $usuario->senha = $_POST['senha'];
     $usuario->telefone = $_POST['telefone'];
@@ -125,16 +125,17 @@ if($_POST){
             right: 0;
         }
         
-        /* Esconder o botão padrão do Google */
-        #g_id_onload,
-        .g_id_signin {
-            display: none !important;
-        }
-        
         /* Loading state */
         .loading {
             opacity: 0.7;
             pointer-events: none;
+        }
+
+        /* Estilo para o container do Google */
+        #google-container {
+            display: flex;
+            justify-content: center;
+            margin: 1rem 0;
         }
     </style>
 </head>
@@ -166,11 +167,26 @@ if($_POST){
                     </div>
                 <?php endif; ?>
 
-                <!-- Botão de Cadastro com Google -->
-                <button class="google-login-btn" id="custom-google-btn">
-                    <div class="google-icon"></div>
-                    Cadastrar com Google
-                </button>
+                <!-- Container para o botão do Google -->
+                <div id="google-container">
+                    <div id="g_id_onload"
+                         data-client_id="154360656663-bftehkt4m59kv8r3sb94licc2b6nso43.apps.googleusercontent.comsss"
+                         data-context="signup"
+                         data-ux_mode="popup"
+                         data-callback="handleGoogleSignup"
+                         data-auto_prompt="false">
+                    </div>
+
+                    <div class="g_id_signin"
+                         data-type="standard"
+                         data-shape="rectangular"
+                         data-theme="outline"
+                         data-text="signup_with"
+                         data-size="large"
+                         data-logo_alignment="left"
+                         data-width="300">
+                    </div>
+                </div>
 
                 <p class="auth-divider">ou use seu email para se registrar</p>
 
@@ -206,23 +222,17 @@ if($_POST){
         </div>
     </div>
 
-    <!-- Configuração do Google Identity Services (hidden) -->
-    <div id="g_id_onload"
-         data-client_id="299295953821-nqbqqb8va16klodnvebgdja6h40mogc5.apps.googleusercontent.com"
-         data-context="signup"
-         data-ux_mode="popup"
-         data-callback="handleGoogleSignup"
-         data-auto_prompt="false">
-    </div>
-
     <script>
         // Função para lidar com o cadastro do Google
         function handleGoogleSignup(response) {
-            console.log('Resposta do Google Signup:', response);
+            console.log('Resposta do Google Signup recebida:', response);
             
-            const customGoogleBtn = document.getElementById('custom-google-btn');
-            customGoogleBtn.classList.add('loading');
-            customGoogleBtn.innerHTML = '<div class="google-icon"></div>Cadastrando...';
+            // Mostrar loading
+            const googleBtn = document.querySelector('.g_id_signin iframe')?.parentElement;
+            if (googleBtn) {
+                googleBtn.style.opacity = '0.7';
+                googleBtn.style.pointerEvents = 'none';
+            }
             
             // Enviar o token para o servidor para validação e cadastro
             fetch('../api/google-signup.php', {
@@ -231,17 +241,21 @@ if($_POST){
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ 
-                    credential: response.credential,
-                    client_id: response.clientId 
+                    credential: response.credential
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Resposta do servidor:', response);
+                return response.json();
+            })
             .then(data => {
+                console.log('Dados recebidos:', data);
+                
                 if (data.success) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Cadastro realizado!',
-                        text: data.message || 'Conta criada com sucesso com sua conta Google.',
+                        title: 'Sucesso!',
+                        text: data.message,
                         timer: 2000,
                         showConfirmButton: false
                     }).then(() => {
@@ -255,39 +269,36 @@ if($_POST){
                     });
                     
                     // Resetar botão
-                    customGoogleBtn.classList.remove('loading');
-                    customGoogleBtn.innerHTML = '<div class="google-icon"></div>Cadastrar com Google';
+                    if (googleBtn) {
+                        googleBtn.style.opacity = '1';
+                        googleBtn.style.pointerEvents = 'auto';
+                    }
                 }
             })
             .catch(error => {
-                console.error('Erro:', error);
+                console.error('Erro na requisição:', error);
                 Swal.fire({
                     icon: 'error',
-                    title: 'Erro',
+                    title: 'Erro de conexão',
                     text: 'Erro de conexão. Tente novamente.'
                 });
                 
                 // Resetar botão
-                customGoogleBtn.classList.remove('loading');
-                customGoogleBtn.innerHTML = '<div class="google-icon"></div>Cadastrar com Google';
+                if (googleBtn) {
+                    googleBtn.style.opacity = '1';
+                    googleBtn.style.pointerEvents = 'auto';
+                }
             });
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Inicializar o Google Identity Services para cadastro
-            google.accounts.id.initialize({
-                client_id: "299295953821-nqbqqb8va16klodnvebgdja6h40mogc5.apps.googleusercontent.com",
-                callback: handleGoogleSignup,
-                context: "signup",
-                ux_mode: "popup"
-            });
-
-            // Configurar o botão personalizado do Google
-            const customGoogleBtn = document.getElementById('custom-google-btn');
-            if (customGoogleBtn) {
-                customGoogleBtn.addEventListener('click', function() {
-                    google.accounts.id.prompt();
-                });
+            console.log('Página de cadastro carregada');
+            
+            // Verificar se a API do Google está carregada
+            if (typeof google !== 'undefined') {
+                console.log('Google API carregada com sucesso');
+            } else {
+                console.error('Google API não carregada');
             }
 
             // Máscara para Telefone
@@ -330,6 +341,12 @@ if($_POST){
                 });
             }
         });
+
+        // Função para debug - verificar se há erros no console
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.log('Erro capturado:', msg, url, lineNo, columnNo, error);
+            return false;
+        };
     </script>
 </body>
 </html>
