@@ -63,43 +63,6 @@ if($_POST){
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        /* Estilos para o botão do Google personalizado */
-        .google-login-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            padding: 12px 20px;
-            background: white;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 500;
-            color: #333;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 1rem 0;
-        }
-        
-        .google-login-btn:hover {
-            border-color: #4285f4;
-            background: #f8f9fa;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .google-login-btn:active {
-            transform: translateY(0);
-        }
-        
-        .google-icon {
-            width: 18px;
-            height: 18px;
-            margin-right: 12px;
-            background: conic-gradient(from -45deg, #ea4335 110deg, #4285f4 90deg 180deg, #34a853 180deg 270deg, #fbbc05 270deg) 73% 55%/150% 150% no-repeat;
-            border-radius: 2px;
-        }
-        
         .auth-divider {
             text-align: center;
             margin: 1.5rem 0;
@@ -125,17 +88,57 @@ if($_POST){
             right: 0;
         }
         
-        /* Loading state */
         .loading {
             opacity: 0.7;
             pointer-events: none;
         }
 
-        /* Estilo para o container do Google */
         #google-container {
             display: flex;
             justify-content: center;
             margin: 1rem 0;
+        }
+
+        /* Botão Google customizado como fallback */
+        .google-btn-custom {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 300px;
+            padding: 12px 20px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 500;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 auto;
+        }
+        
+        .google-btn-custom:hover {
+            border-color: #4285f4;
+            background: #f8f9fa;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .google-icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 12px;
+            background: conic-gradient(from -45deg, #ea4335 110deg, #4285f4 90deg 180deg, #34a853 180deg 270deg, #fbbc05 270deg) 73% 55%/150% 150% no-repeat;
+            border-radius: 2px;
+        }
+
+        .google-loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
@@ -169,11 +172,12 @@ if($_POST){
 
                 <!-- Container para o botão do Google -->
                 <div id="google-container">
+                    <!-- Google Sign-In Button -->
                     <div id="g_id_onload"
-                         data-client_id="154360656663-bftehkt4m59kv8r3sb94licc2b6nso43.apps.googleusercontent.comsss"
+                         data-client_id="154360656663-bftehkt4m59kv8r3sb94licc2b6nso43.apps.googleusercontent.com"
                          data-context="signup"
                          data-ux_mode="popup"
-                         data-callback="handleGoogleSignup"
+                         data-callback="handleGoogleSignIn"
                          data-auto_prompt="false">
                     </div>
 
@@ -186,6 +190,12 @@ if($_POST){
                          data-logo_alignment="left"
                          data-width="300">
                     </div>
+
+                    <!-- Fallback Button -->
+                    <button id="googleManualBtn" class="google-btn-custom hidden">
+                        <div class="google-icon"></div>
+                        <span>Cadastrar com Google</span>
+                    </button>
                 </div>
 
                 <p class="auth-divider">ou use seu email para se registrar</p>
@@ -223,18 +233,30 @@ if($_POST){
     </div>
 
     <script>
-        // Função para lidar com o cadastro do Google
-        function handleGoogleSignup(response) {
-            console.log('Resposta do Google Signup recebida:', response);
+        // Variável global para controlar o estado do Google
+        let googleAPILoaded = false;
+
+        // Função chamada quando o Google Sign-In é bem-sucedido
+        function handleGoogleSignIn(response) {
+            console.log('Google Sign-In response:', response);
             
-            // Mostrar loading
-            const googleBtn = document.querySelector('.g_id_signin iframe')?.parentElement;
-            if (googleBtn) {
-                googleBtn.style.opacity = '0.7';
-                googleBtn.style.pointerEvents = 'none';
+            if (!response.credential) {
+                showError('Não foi possível obter as credenciais do Google.');
+                return;
             }
+
+            showLoading(true);
             
-            // Enviar o token para o servidor para validação e cadastro
+            // Decodificar o token para debug
+            try {
+                const tokenParts = response.credential.split('.');
+                const payload = JSON.parse(atob(tokenParts[1]));
+                console.log('Google Payload:', payload);
+            } catch (e) {
+                console.error('Error decoding token:', e);
+            }
+
+            // Enviar para o servidor
             fetch('../api/google-signup.php', {
                 method: 'POST',
                 headers: {
@@ -245,11 +267,13 @@ if($_POST){
                 })
             })
             .then(response => {
-                console.log('Resposta do servidor:', response);
+                if (!response.ok) {
+                    throw new Error('Erro no servidor: ' + response.status);
+                }
                 return response.json();
             })
             .then(data => {
-                console.log('Dados recebidos:', data);
+                console.log('Server response:', data);
                 
                 if (data.success) {
                     Swal.fire({
@@ -262,91 +286,159 @@ if($_POST){
                         window.location.href = 'home.php';
                     });
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Erro no cadastro',
-                        text: data.message || 'Erro ao criar conta com Google.'
-                    });
-                    
-                    // Resetar botão
-                    if (googleBtn) {
-                        googleBtn.style.opacity = '1';
-                        googleBtn.style.pointerEvents = 'auto';
-                    }
+                    showError(data.message || 'Erro ao processar cadastro com Google.');
                 }
             })
             .catch(error => {
-                console.error('Erro na requisição:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro de conexão',
-                    text: 'Erro de conexão. Tente novamente.'
-                });
-                
-                // Resetar botão
-                if (googleBtn) {
-                    googleBtn.style.opacity = '1';
-                    googleBtn.style.pointerEvents = 'auto';
+                console.error('Fetch error:', error);
+                showError('Erro de conexão: ' + error.message);
+            })
+            .finally(() => {
+                showLoading(false);
+            });
+        }
+
+        // Função para mostrar/ocultar loading
+        function showLoading(show) {
+            const googleBtn = document.querySelector('.g_id_signin');
+            const manualBtn = document.getElementById('googleManualBtn');
+            
+            if (show) {
+                if (googleBtn) googleBtn.style.opacity = '0.6';
+                if (manualBtn) manualBtn.classList.add('google-loading');
+            } else {
+                if (googleBtn) googleBtn.style.opacity = '1';
+                if (manualBtn) manualBtn.classList.remove('google-loading');
+            }
+        }
+
+        // Função para mostrar erro
+        function showError(message) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: message,
+                confirmButtonText: 'OK'
+            });
+        }
+
+        // Função para inicialização manual do Google Sign-In
+        function initManualGoogleSignIn() {
+            const manualBtn = document.getElementById('googleManualBtn');
+            if (!manualBtn) return;
+
+            manualBtn.addEventListener('click', function() {
+                if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+                    // Se a API está carregada, use o método padrão
+                    google.accounts.id.prompt();
+                } else {
+                    // Se não, mostre instruções
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Google não disponível',
+                        html: `
+                            <p>O cadastro com Google não está carregando automaticamente.</p>
+                            <p><strong>Soluções:</strong></p>
+                            <ul style="text-align: left; margin: 10px 0;">
+                                <li>Verifique sua conexão com internet</li>
+                                <li>Desative bloqueadores de anúncios</li>
+                                <li>Tente atualizar a página</li>
+                                <li>Use o formulário tradicional abaixo</li>
+                            </ul>
+                        `,
+                        confirmButtonText: 'Entendi'
+                    });
                 }
             });
         }
 
+        // Verificar se o Google API carregou
+        function checkGoogleAPI() {
+            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+                console.log('✅ Google API carregada com sucesso');
+                googleAPILoaded = true;
+                
+                // Ocultar botão manual se o Google estiver funcionando
+                const manualBtn = document.getElementById('googleManualBtn');
+                if (manualBtn) {
+                    manualBtn.classList.add('hidden');
+                }
+                
+                return true;
+            }
+            return false;
+        }
+
+        // Inicialização quando a página carrega
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Página de cadastro carregada');
-            
-            // Verificar se a API do Google está carregada
-            if (typeof google !== 'undefined') {
-                console.log('Google API carregada com sucesso');
-            } else {
-                console.error('Google API não carregada');
+            console.log('🚀 Página de cadastro carregada');
+
+            // Verificar imediatamente se o Google API carregou
+            if (!checkGoogleAPI()) {
+                console.log('⚠️ Google API não carregada - aguardando...');
+                
+                // Tentar verificar novamente após 2 segundos
+                setTimeout(() => {
+                    if (!checkGoogleAPI()) {
+                        console.log('❌ Google API ainda não carregada - mostrando fallback');
+                        const manualBtn = document.getElementById('googleManualBtn');
+                        if (manualBtn) {
+                            manualBtn.classList.remove('hidden');
+                        }
+                    }
+                }, 2000);
+
+                // Última tentativa após 5 segundos
+                setTimeout(() => {
+                    if (!checkGoogleAPI()) {
+                        console.log('💀 Google API falhou ao carregar');
+                        const manualBtn = document.getElementById('googleManualBtn');
+                        if (manualBtn) {
+                            manualBtn.classList.remove('hidden');
+                        }
+                    }
+                }, 5000);
             }
 
-            // Máscara para Telefone
-            document.querySelector('input[name="telefone"]')?.addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\D/g, '');
-                if (value.length <= 11) {
-                    value = value.replace(/(\d{2})(\d)/, '($1) $2');
-                    value = value.replace(/(\d{5})(\d)/, '$1-$2');
-                }
-                e.target.value = value;
-            });
+            // Inicializar botão manual
+            initManualGoogleSignIn();
 
-            // Máscara para CPF
-            document.querySelector('input[name="cpf"]')?.addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\D/g, '');
-                if (value.length <= 11) {
-                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
-                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
-                    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-                }
-                e.target.value = value;
-            });
-
-            // Loading state para o formulário tradicional
-            const authForm = document.querySelector('.auth-form');
-            const authBtn = authForm?.querySelector('.auth-btn-primary');
-            
-            if (authForm && authBtn) {
-                authForm.addEventListener('submit', function(e) {
-                    authBtn.classList.add('loading');
-                    authBtn.disabled = true;
-                    authBtn.innerHTML = 'CADASTRANDO...';
-                    
-                    // Timeout para evitar loading infinito
-                    setTimeout(function() {
-                        authBtn.classList.remove('loading');
-                        authBtn.disabled = false;
-                        authBtn.innerHTML = 'REGISTRAR';
-                    }, 10000);
-                });
-            }
+            // Máscaras para telefone e CPF
+            initMasks();
         });
 
-        // Função para debug - verificar se há erros no console
-        window.onerror = function(msg, url, lineNo, columnNo, error) {
-            console.log('Erro capturado:', msg, url, lineNo, columnNo, error);
-            return false;
-        };
+        // Inicializar máscaras
+        function initMasks() {
+            // Máscara para Telefone
+            const telefoneInput = document.querySelector('input[name="telefone"]');
+            if (telefoneInput) {
+                telefoneInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value.length <= 11) {
+                        value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                        value = value.replace(/(\d{5})(\d)/, '$1-$2');
+                    }
+                    e.target.value = value;
+                });
+            }
+
+            // Máscara para CPF
+            const cpfInput = document.querySelector('input[name="cpf"]');
+            if (cpfInput) {
+                cpfInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value.length <= 11) {
+                        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                        value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                    }
+                    e.target.value = value;
+                });
+            }
+        }
+
+        // Função global para debug
+        window.handleGoogleSignIn = handleGoogleSignIn;
     </script>
 </body>
 </html>

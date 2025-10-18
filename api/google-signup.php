@@ -1,108 +1,74 @@
 <?php
-// ../api/google-signup.php
 session_start();
 require_once '../config/database.php';
 require_once '../models/Usuario.php';
 
 header('Content-Type: application/json');
 
-// Configurações do Google
-$CLIENT_ID = "154360656663-bftehkt4m59kv8r3sb94licc2b6nso43.apps.googleusercontent.com";
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Método não permitido']);
-    exit;
-}
-
+// Verificar se o token foi enviado
 $data = json_decode(file_get_contents('php://input'), true);
-$credential = $data['credential'] ?? '';
 
-if (empty($credential)) {
-    echo json_encode(['success' => false, 'message' => 'Token não fornecido']);
+if (!isset($data['credential'])) {
+    echo json_encode(['success' => false, 'message' => 'Token não recebido']);
     exit;
 }
+
+$token = $data['credential'];
 
 try {
-    // Decodificar o token JWT do Google
-    $tokenParts = explode('.', $credential);
+    // Decodificar o token JWT manualmente
+    $tokenParts = explode('.', $token);
     if (count($tokenParts) !== 3) {
         throw new Exception('Token JWT inválido');
     }
-
-    $payload = base64_decode(str_replace(['-', '_'], ['+', '/'], $tokenParts[1]));
-    $userData = json_decode($payload, true);
-
-    if (!$userData) {
-        throw new Exception('Não foi possível decodificar o token');
+    
+    $payload = json_decode(base64_decode(str_replace('_', '/', str_replace('-', '+', $tokenParts[1]))), true);
+    
+    if (!$payload) {
+        throw new Exception('Falha ao decodificar token');
     }
-
-    // Verificar se o token é válido
-    if ($userData['aud'] !== $CLIENT_ID) {
-        throw new Exception('Token não é válido para este aplicativo');
-    }
-
-    // Verificar expiração
-    if (isset($userData['exp']) && $userData['exp'] < time()) {
+    
+    // Verificar se o token é válido (expiração)
+    $currentTime = time();
+    if (isset($payload['exp']) && $payload['exp'] < $currentTime) {
         throw new Exception('Token expirado');
     }
-
+    
     // Dados do usuário do Google
-    $googleId = $userData['sub'];
-    $email = $userData['email'];
-    $nome = $userData['name'] ?? 'Usuário Google';
-
+    $google_id = $payload['sub'];
+    $email = $payload['email'];
+    $nome = $payload['name'] ?? 'Usuário Google';
+    
+    // Log para debug
+    error_log("Google Signup Attempt: " . $email . " - " . $google_id);
+    
     $database = new Database();
     $db = $database->getConnection();
     $usuario = new Usuario($db);
-
-    // Verificar se o usuário já existe
-    $usuario->email = $email;
     
-    if ($usuario->buscarPorEmail() || $usuario->buscarPorGoogleId($googleId)) {
-        // Usuário já existe - fazer login
+    // Processar autenticação Google
+    $result = $usuario->processarGoogleAuth($google_id, $email, $nome);
+    
+    if ($result['success']) {
+        // Salvar na sessão
         $_SESSION['usuario_id'] = $usuario->id_usuario;
         $_SESSION['usuario_nome'] = $usuario->nome_completo;
-        $_SESSION['usuario_tipo'] = $usuario->tipo;
         $_SESSION['usuario_email'] = $usuario->email;
-        $_SESSION['logado'] = true;
-        $_SESSION['ultimo_acesso'] = time();
+        $_SESSION['usuario_tipo'] = $usuario->tipo;
         
-        echo json_encode([
-            'success' => true, 
-            'message' => 'Login realizado com sucesso! Sua conta já existe.'
-        ]);
+        error_log("Google Signup SUCCESS: " . $email);
+        
+        echo json_encode($result);
     } else {
-        // Criar nova conta com Google
-        $usuario->nome_completo = $nome;
-        $usuario->email = $email;
-        $usuario->google_id = $googleId;
-        $usuario->telefone = '';
-        $usuario->cpf = '';
-
-        if ($usuario->cadastrarComGoogle()) {
-            $_SESSION['usuario_id'] = $usuario->id_usuario;
-            $_SESSION['usuario_nome'] = $usuario->nome_completo;
-            $_SESSION['usuario_tipo'] = $usuario->tipo;
-            $_SESSION['usuario_email'] = $usuario->email;
-            $_SESSION['logado'] = true;
-            $_SESSION['ultimo_acesso'] = time();
-            
-            echo json_encode([
-                'success' => true, 
-                'message' => 'Conta criada com sucesso com Google!'
-            ]);
-        } else {
-            echo json_encode([
-                'success' => false, 
-                'message' => 'Erro ao criar conta com Google.'
-            ]);
-        }
+        error_log("Google Signup FAILED: " . $result['message']);
+        echo json_encode($result);
     }
+    
 } catch (Exception $e) {
-    error_log('Erro no cadastro com Google: ' . $e->getMessage());
+    error_log("Google Signup ERROR: " . $e->getMessage());
     echo json_encode([
         'success' => false, 
-        'message' => 'Erro: ' . $e->getMessage()
+        'message' => 'Erro interno do servidor. Tente novamente.'
     ]);
 }
 ?>
