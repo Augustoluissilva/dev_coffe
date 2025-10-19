@@ -1,7 +1,7 @@
 ```php
 <?php
 session_start();
-require_once '../includes/db_connect.php'; // Ensure this path is correct
+require_once '../config/database.php'; // Ensure this path is correct
 
 if (!isset($_SESSION['usuario_id'])) {
     header("Location: login.php");

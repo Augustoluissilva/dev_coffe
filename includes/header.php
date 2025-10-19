@@ -35,7 +35,7 @@ require_once '../config/config.php';
                     <i class="fas fa-search search-icon"></i>
                     <input type="text" class="search-bar" placeholder="Pesquisar produtos..." id="search-bar">
                 </div>
-                <a href="carrinho.php" class="cart-icon">
+                <a href="checkout.php" class="cart-icon">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-count">0</span>
                 </a>
