@@ -1,5 +1,5 @@
 <?php
-// navbar.php - SEM session_start() aqui, apenas inclui o config
+// header.php - SEM session_start() aqui, apenas inclui o config
 require_once '../config/config.php';
 ?>
 <!DOCTYPE html>
@@ -13,7 +13,6 @@ require_once '../config/config.php';
 </head>
 <body>
     
-
     <!-- Header Principal -->
     <header class="main-header">
         <div class="container header-container">
@@ -42,7 +41,30 @@ require_once '../config/config.php';
                 </a>
                 
                 <div class="user-avatar">
-                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User Avatar" class="avatar-img" id="avatar">
+                    <?php
+                    // Lógica para exibir o avatar do usuário
+                    $avatar_path = '';
+                    if (isset($_SESSION['usuario_avatar']) && !empty($_SESSION['usuario_avatar'])) {
+                        $avatar_path = $_SESSION['usuario_avatar'];
+                    }
+                    
+                    // Se não tem avatar ou é o padrão, usa imagem aleatória
+                    if (empty($avatar_path) || $avatar_path === 'default-avatar.jpg') {
+                        $avatar_url = 'https://randomuser.me/api/portraits/men/32.jpg';
+                    } else {
+                        // Verifica se o caminho é absoluto ou relativo
+                        if (strpos($avatar_path, 'http') === 0) {
+                            $avatar_url = $avatar_path;
+                        } else {
+                            $avatar_url = '../' . $avatar_path;
+                        }
+                    }
+                    ?>
+                    <img src="<?php echo $avatar_url; ?>" 
+                         alt="User Avatar" 
+                         class="avatar-img" 
+                         id="avatar"
+                         onerror="this.src='https://randomuser.me/api/portraits/men/32.jpg'">
                     <div class="user-dropdown" id="dropdown">
                         <div class="dropdown-header">
                             <div class="user-name">Olá, <?php echo htmlspecialchars(explode(' ', $usuario_nome)[0]); ?></div>
@@ -149,5 +171,27 @@ require_once '../config/config.php';
             }
 
             updateCartCount();
+
+            // Sistema de busca (se necessário)
+            const searchBar = document.getElementById('search-bar');
+            if (searchBar) {
+                searchBar.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'scale(1.05)';
+                });
+
+                searchBar.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'scale(1)';
+                });
+            }
         });
+
+        // Função para atualizar o avatar dinamicamente (pode ser chamada após upload)
+        function atualizarAvatar(novoAvatarUrl) {
+            const avatarImg = document.getElementById('avatar');
+            if (avatarImg && novoAvatarUrl) {
+                avatarImg.src = novoAvatarUrl;
+            }
+        }
     </script>
+</body>
+</html>

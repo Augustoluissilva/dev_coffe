@@ -28,9 +28,9 @@ if($_POST){
     $usuario->senha = $senha;
 
     if($usuario->login()){
-        // Sistema de autenticação atualizado
-        $_SESSION['usuario_id'] = $usuario->id;
-        $_SESSION['usuario_nome'] = $usuario->nome;
+        // Sistema de autenticação atualizado - usando os nomes corretos da estrutura
+        $_SESSION['usuario_id'] = $usuario->id_usuario;
+        $_SESSION['usuario_nome'] = $usuario->nome_completo;
         $_SESSION['usuario_tipo'] = $usuario->tipo;
         $_SESSION['usuario_email'] = $usuario->email;
         $_SESSION['logado'] = true;
@@ -54,6 +54,11 @@ if($_POST){
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/login.css">
+    
+    <!-- Scripts para Google Login -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <style>
         /* Fallback inline caso o CSS externo não carregue */
         .fallback-loading {
@@ -63,6 +68,44 @@ if($_POST){
             height: 100vh;
             background: #f5f5f5;
             font-family: 'Montserrat', sans-serif;
+        }
+        
+        /* Estilos para o botão do Google */
+        .google-login-container {
+            display: flex;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        
+        .auth-divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            color: #666;
+            position: relative;
+        }
+        
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: #ddd;
+        }
+        
+        .auth-divider::before {
+            left: 0;
+        }
+        
+        .auth-divider::after {
+            right: 0;
+        }
+
+        /* Loading state para botão do Google */
+        .google-loading {
+            opacity: 0.7;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -86,13 +129,25 @@ if($_POST){
                     </div>
                 <?php endif; ?>
 
-                <div class="social-buttons">
-                    <button class="social-btn facebook" type="button" aria-label="Login com Facebook">
-                        <!-- Ícone via CSS -->
-                    </button>
-                    <button class="social-btn google" type="button" aria-label="Login com Google">
-                        <!-- Ícone via CSS -->
-                    </button>
+                <!-- Botão de Login com Google -->
+                <div class="google-login-container">
+                    <div id="g_id_onload"
+                         data-client_id="154360656663-bftehkt4m59kv8r3sb94licc2b6nso43.apps.googleusercontent.com"
+                         data-context="signin"
+                         data-ux_mode="popup"
+                         data-callback="handleGoogleLogin"
+                         data-auto_prompt="false">
+                    </div>
+
+                    <div class="g_id_signin"
+                         data-type="standard"
+                         data-shape="rectangular"
+                         data-theme="outline"
+                         data-text="signin_with"
+                         data-size="large"
+                         data-logo_alignment="left"
+                         data-width="300">
+                    </div>
                 </div>
 
                 <p class="auth-divider">ou use sua conta</p>
@@ -144,7 +199,87 @@ if($_POST){
     </div>
 
     <script>
+        // Função para lidar com o login do Google
+        function handleGoogleLogin(response) {
+            console.log('Resposta do Google recebida:', response);
+            
+            // Mostrar loading no botão do Google
+            const googleBtn = document.querySelector('.g_id_signin');
+            if (googleBtn) {
+                googleBtn.classList.add('google-loading');
+            }
+            
+            // Enviar o token para o servidor para validação
+            fetch('../api/google-login.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    credential: response.credential
+                })
+            })
+            .then(response => {
+                console.log('Resposta do servidor:', response);
+                if (!response.ok) {
+                    throw new Error('Erro na resposta do servidor: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Dados recebidos:', data);
+                
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Sucesso!',
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = 'home.php';
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro no login',
+                        text: data.message || 'Erro ao fazer login com Google.'
+                    });
+                    
+                    // Resetar botão do Google
+                    if (googleBtn) {
+                        googleBtn.classList.remove('google-loading');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erro na requisição:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro de conexão',
+                    text: 'Erro de conexão. Tente novamente.'
+                });
+                
+                // Resetar botão do Google
+                if (googleBtn) {
+                    googleBtn.classList.remove('google-loading');
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Página de login carregada - inicializando Google Sign-In');
+            
+            // Inicializar manualmente para garantir
+            if (typeof google !== 'undefined') {
+                google.accounts.id.initialize({
+                    client_id: "154360656663-bftehkt4m59kv8r3sb94licc2b6nso43.apps.googleusercontent.com",
+                    callback: handleGoogleLogin,
+                    context: "signin",
+                    ux_mode: "popup"
+                });
+            }
+
             // Prevenir navegação com botão voltar após logout
             window.history.pushState(null, null, window.location.href);
             window.onpopstate = function() {
@@ -193,7 +328,7 @@ if($_POST){
                         loginBtn.classList.remove('loading');
                         loginBtn.disabled = false;
                         loginBtn.innerHTML = 'LOGIN';
-                    }, 10000); // 10 segundos timeout
+                    }, 10000);
                 });
             }
 
@@ -207,144 +342,9 @@ if($_POST){
                 }
             }
 
-            // Verificar na carga inicial e no redimensionamento
             checkMobile();
             window.addEventListener('resize', checkMobile);
-
-            // Efeitos de interação nos inputs
-            const formInputs = document.querySelectorAll('.form-input');
-            formInputs.forEach(input => {
-                // Adiciona classe quando o input tem valor
-                input.addEventListener('input', function() {
-                    if (this.value) {
-                        this.classList.add('has-value');
-                    } else {
-                        this.classList.remove('has-value');
-                    }
-                });
-
-                // Verifica estado inicial
-                if (input.value) {
-                    input.classList.add('has-value');
-                }
-
-                // Efeito de foco melhorado
-                input.addEventListener('focus', function() {
-                    this.parentElement.classList.add('focused');
-                });
-
-                input.addEventListener('blur', function() {
-                    this.parentElement.classList.remove('focused');
-                });
-            });
-
-            // Prevenir múltiplos cliques nos botões sociais
-            const socialButtons = document.querySelectorAll('.social-btn');
-            socialButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    // Feedback visual
-                    this.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        this.style.transform = '';
-                    }, 150);
-
-                    // Aqui você pode adicionar a lógica de login social
-                    const socialType = this.classList.contains('facebook') ? 'Facebook' : 'Google';
-                    console.log(`Login com ${socialType} clicado - Integre com sua API aqui`);
-                    
-                    // Exemplo de modal ou redirecionamento
-                    // window.location.href = `auth-${socialType.toLowerCase()}.php`;
-                });
-            });
-
-            // Melhorar acessibilidade do teclado
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    const focused = document.activeElement;
-                    if (focused.classList.contains('form-input') || 
-                        focused.classList.contains('social-btn') ||
-                        focused.classList.contains('auth-btn-primary') ||
-                        focused.classList.contains('auth-btn-outline')) {
-                        focused.blur();
-                    }
-                }
-            });
-
-            // Adicionar suporte para prefers-color-scheme
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                document.body.classList.add('dark-mode-support');
-            }
-
-            // Detecta se o CSS carregou corretamente
-            setTimeout(function() {
-                const authContainer = document.querySelector('.auth-container');
-                if (!authContainer || getComputedStyle(authContainer).display === 'none') {
-                    console.error('CSS não carregou corretamente. Aplicando fallback...');
-                    document.body.innerHTML = `
-                        <div class="fallback-loading">
-                            <div style="text-align: center; padding: 2rem;">
-                                <h1 style="color: #E0B76F; margin-bottom: 1rem;">DevCoffee</h1>
-                                <p>Carregando...</p>
-                            </div>
-                        </div>
-                    `;
-                }
-            }, 1000);
         });
-
-        // Suporte para preferência de redução de movimento
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            document.documentElement.style.setProperty('--animation-duration', '0.01ms');
-        }
-
-        // Prevenir que a página seja armazenada em cache
-        window.onpageshow = function(event) {
-            if (event.persisted) {
-                window.location.reload();
-            }
-        };
-    </script>
-
-    <!-- Fallback para navegadores muito antigos -->
-    <script>
-        // Polyfill para NodeList.forEach em IE
-        if (window.NodeList && !NodeList.prototype.forEach) {
-            NodeList.prototype.forEach = Array.prototype.forEach;
-        }
-
-        // Polyfill para Element.classList em IE9
-        if (!("classList" in document.documentElement)) {
-            Object.defineProperty(HTMLElement.prototype, 'classList', {
-                get: function() {
-                    var self = this;
-                    function update(fn) {
-                        return function(value) {
-                            var classes = self.className.split(/\s+/g);
-                            var index = classes.indexOf(value);
-                            fn(classes, index, value);
-                            self.className = classes.join(" ");
-                        };
-                    }
-                    return {
-                        add: update(function(classes, index, value) {
-                            if (!~index) classes.push(value);
-                        }),
-                        remove: update(function(classes, index) {
-                            if (~index) classes.splice(index, 1);
-                        }),
-                        toggle: update(function(classes, index, value) {
-                            if (~index) classes.splice(index, 1);
-                            else classes.push(value);
-                        }),
-                        contains: function(value) {
-                            return !!~self.className.split(/\s+/g).indexOf(value);
-                        }
-                    };
-                }
-            });
-        }
     </script>
 </body>
 </html>
