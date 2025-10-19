@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 
@@ -36,6 +37,154 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
     <title>Dev Coffee - Café todo dia!</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/home.css">
+    <style>
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            animation: slideInModal 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #6b4e31;
+            color: white;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .modal-close {
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-price {
+            color: #555;
+        }
+
+        .cart-item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cart-item-quantity button {
+            background: #ddd;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .cart-item-quantity button:hover {
+            background: #ccc;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-total {
+            font-size: 1.2rem;
+        }
+
+        .modal-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .checkout-button {
+            background-color: #6b4e31;
+            color: white;
+        }
+
+        .checkout-button:hover {
+            background-color: #5a3f28;
+        }
+
+        .clear-cart-button {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .clear-cart-button:hover {
+            background-color: #c82333;
+        }
+
+        @keyframes slideInModal {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .modal-content {
+                width: 95%;
+            }
+        }
+    </style>
 </head>
 <body>
     <?php include '../includes/header.php'; ?>
@@ -255,19 +404,72 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
         </div>
     </footer>
 
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="modal" role="dialog" aria-labelledby="cart-modal-title">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="cart-modal-title">Seu Carrinho</h2>
+                <span class="modal-close" aria-label="Fechar carrinho">&times;</span>
+            </div>
+            <div class="modal-body" id="cart-items">
+                <!-- Cart items will be dynamically inserted here -->
+            </div>
+            <div class="modal-footer">
+                <div class="cart-total">
+                    <strong>Total: R$ <span id="cart-total-amount">0,00</span></strong>
+                </div>
+                <button class="modal-button checkout-button">Finalizar Compra</button>
+                <button class="modal-button clear-cart-button">Limpar Carrinho</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const addToCartButtons = document.querySelectorAll('.add-to-cart');
             const cartCount = document.querySelector('.cart-count');
+            const cartModal = document.getElementById('cart-modal');
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartTotalAmount = document.getElementById('cart-total-amount');
+            const modalClose = document.querySelector('.modal-close');
+            const clearCartButton = document.querySelector('.clear-cart-button');
+            const checkoutButton = document.querySelector('.checkout-button');
             let cartItems = [];
             let count = 0;
 
+            // Load cart from localStorage
             if (localStorage.getItem('cartItems')) {
                 cartItems = JSON.parse(localStorage.getItem('cartItems'));
                 count = cartItems.reduce((total, item) => total + item.quantity, 0);
                 cartCount.textContent = count;
+                updateCartModal();
             }
 
+            // Open cart modal when clicking cart icon
+            const cartIcon = document.querySelector('.cart-icon');
+            if (cartIcon) {
+                cartIcon.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    cartModal.style.display = 'flex';
+                    updateCartModal();
+                });
+            } else {
+                console.warn('Cart icon not found. Ensure header.php includes an element with class="cart-icon".');
+            }
+
+            // Close modal
+            modalClose.addEventListener('click', function() {
+                cartModal.style.display = 'none';
+            });
+
+            // Close modal when clicking outside
+            cartModal.addEventListener('click', function(e) {
+                if (e.target === cartModal) {
+                    cartModal.style.display = 'none';
+                }
+            });
+
+            // Add to cart
             addToCartButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     if (this.disabled) return;
@@ -291,8 +493,8 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
 
                     count++;
                     cartCount.textContent = count;
-                    
                     localStorage.setItem('cartItems', JSON.stringify(cartItems));
+                    updateCartModal();
                     
                     const originalText = this.textContent;
                     this.textContent = 'Adicionado!';
@@ -307,24 +509,121 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
                 });
             });
 
+            // Clear cart
+            clearCartButton.addEventListener('click', function() {
+                cartItems = [];
+                count = 0;
+                cartCount.textContent = count;
+                localStorage.setItem('cartItems', JSON.stringify(cartItems));
+                updateCartModal();
+                showNotification('Carrinho limpo!');
+            });
+
+            // Checkout button
+            checkoutButton.addEventListener('click', function() {
+                if (cartItems.length === 0) {
+                    showNotification('Seu carrinho está vazio!');
+                    return;
+                }
+                // Redirect to checkout page
+                window.location.href = 'checkout.php';
+            });
+
+            // Update cart modal content
+            function updateCartModal() {
+                cartItemsContainer.innerHTML = '';
+                let total = 0;
+
+                if (cartItems.length === 0) {
+                    cartItemsContainer.innerHTML = '<p>Seu carrinho está vazio.</p>';
+                } else {
+                    cartItems.forEach((item, index) => {
+                        const itemTotal = item.price * item.quantity;
+                        total += itemTotal;
+
+                        const cartItem = document.createElement('div');
+                        cartItem.classList.add('cart-item');
+                        cartItem.innerHTML = `
+                            <div class="cart-item-info">
+                                <div class="cart-item-name">${item.name}</div>
+                                <div class="cart-item-price">R$ ${item.price.toFixed(2).replace('.', ',')}</div>
+                            </div>
+                            <div class="cart-item-quantity">
+                                <button class="decrease-quantity" data-index="${index}">-</button>
+                                <span>${item.quantity}</span>
+                                <button class="increase-quantity" data-index="${index}">+</button>
+                                <button class="remove-item" data-index="${index}"><i class="fas fa-trash"></i></button>
+                            </div>
+                        `;
+                        cartItemsContainer.appendChild(cartItem);
+                    });
+                }
+
+                cartTotalAmount.textContent = total.toFixed(2).replace('.', ',');
+                
+                // Add event listeners for quantity buttons
+                document.querySelectorAll('.increase-quantity').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const index = this.getAttribute('data-index');
+                        cartItems[index].quantity += 1;
+                        count += 1;
+                        cartCount.textContent = count;
+                        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+                        updateCartModal();
+                    });
+                });
+
+                document.querySelectorAll('.decrease-quantity').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const index = this.getAttribute('data-index');
+                        if (cartItems[index].quantity > 1) {
+                            cartItems[index].quantity -= 1;
+                            count -= 1;
+                        } else {
+                            cartItems.splice(index, 1);
+                            count -= 1;
+                        }
+                        cartCount.textContent = count;
+                        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+                        updateCartModal();
+                    });
+                });
+
+                document.querySelectorAll('.remove-item').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const index = this.getAttribute('data-index');
+                        count -= cartItems[index].quantity;
+                        cartItems.splice(index, 1);
+                        cartCount.textContent = count;
+                        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+                        updateCartModal();
+                        showNotification('Item removido do carrinho!');
+                    });
+                });
+            }
+
             // Sistema de busca
             const searchBar = document.getElementById('search-bar');
             const productCards = document.querySelectorAll('.product-card');
 
-            searchBar.addEventListener('input', function() {
-                const searchTerm = this.value.trim().toLowerCase();
+            if (searchBar) {
+                searchBar.addEventListener('input', function() {
+                    const searchTerm = this.value.trim().toLowerCase();
 
-                productCards.forEach(card => {
-                    const productName = card.getAttribute('data-name').toLowerCase();
-                    const productDescription = card.getAttribute('data-description').toLowerCase();
+                    productCards.forEach(card => {
+                        const productName = card.getAttribute('data-name').toLowerCase();
+                        const productDescription = card.getAttribute('data-description').toLowerCase();
 
-                    if (searchTerm === '' || productName.includes(searchTerm) || productDescription.includes(searchTerm)) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
+                        if (searchTerm === '' || productName.includes(searchTerm) || productDescription.includes(searchTerm)) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
                 });
-            });
+            } else {
+                console.warn('Search bar not found. Ensure header.php includes an input with id="search-bar".');
+            }
 
             // Função de notificação
             function showNotification(message) {
@@ -333,12 +632,12 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
                     position: fixed;
                     top: 20px;
                     right: 20px;
-                    background: var(--secondary);
+                    background: #28a745;
                     color: white;
                     padding: 15px 20px;
                     border-radius: 4px;
                     z-index: 10000;
-                    box-shadow: var(--shadow);
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                     animation: slideIn 0.3s ease;
                 `;
                 notification.textContent = message;
@@ -354,15 +653,17 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
             const mobileMenu = document.querySelector('.mobile-menu');
             const mainNav = document.querySelector('.main-nav');
             
-            mobileMenu.addEventListener('click', function() {
-                mainNav.classList.toggle('active');
-            });
+            if (mobileMenu && mainNav) {
+                mobileMenu.addEventListener('click', function() {
+                    mainNav.classList.toggle('active');
+                });
 
-            document.addEventListener('click', function(event) {
-                if (!mobileMenu.contains(event.target) && !mainNav.contains(event.target)) {
-                    mainNav.classList.remove('active');
-                }
-            });
+                document.addEventListener('click', function(event) {
+                    if (!mobileMenu.contains(event.target) && !mainNav.contains(event.target)) {
+                        mainNav.classList.remove('active');
+                    }
+                });
+            }
         });
 
         const style = document.createElement('style');
