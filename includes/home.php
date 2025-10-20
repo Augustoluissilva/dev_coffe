@@ -106,7 +106,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
                             <?php if ($isOutOfStock): ?>
                                 <div class="product-badge out-of-stock">Esgotado</div>
                             <?php elseif ($isNew): ?>
-                                <div class="product-badge new">Novo</div>
+                          
                             <?php endif; ?>
                             
                             <div class="product-image">
