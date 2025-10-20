@@ -159,8 +159,7 @@ require_once '../config/config.php';
             <nav class="main-nav">
                 <ul>
                     <li><a href="home.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'home.php' ? 'active' : ''; ?>">Home</a></li>
-                    <li><a href="produtos.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'produtos.php' ? 'active' : ''; ?>">Produtos</a></li>
-                    <li><a href="categorias.php">Categorias</a></li>
+                     <li><a href="menu.php">Menu</a></li>
                     <li><a href="sobre.php">Sobre</a></li>
                     <li><a href="contato.php">Contato</a></li>
                 </ul>

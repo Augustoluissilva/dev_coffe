@@ -17,8 +17,8 @@ function enviarEmailRecuperacao($email, $nome, $token) {
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
-        $mail->Username = 'luis.agsilva22@gmail.com'; // SEU EMAIL GMAIL
-        $mail->Password = 'derx swor hrqv zshc'; // SUA SENHA DE APP
+        $mail->Username = 'devcoffee.cafeteria25@gmail.com'; // SEU EMAIL GMAIL
+        $mail->Password = 'n h k q k z t m w d k e b w w c'; // SUA SENHA DE APP
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
         
@@ -34,7 +34,7 @@ function enviarEmailRecuperacao($email, $nome, $token) {
         );
         
         // Remetente (DEVE ser o MESMO email do Gmail)
-        $mail->setFrom('luis.agsilva22@gmail.com', 'DevCoffee');
+        $mail->setFrom('devcoffee.cafeteria25@gmail.com', 'DevCoffee');
         $mail->addAddress($email, $nome);
         $mail->addReplyTo('nao-responder@devcoffee.com', 'DevCoffee');
         
