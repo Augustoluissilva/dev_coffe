@@ -115,27 +115,7 @@
     </section>
 
     <!-- 6️⃣ Rodapé -->
-    <footer class="footer-section">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-column">
-                    <h4>Instagram</h4>
-                    <p>@devcoffee</p>
-                </div>
-                <div class="footer-column">
-                    <h4>E-mail</h4>
-                    <p>devcoffee@gmail.com</p>
-                </div>
-                <div class="footer-column">
-                    <h4>Telefone</h4>
-                    <p>+55 (12) 99999-9999</p>
-                </div>
-            </div>
-            <div class="footer-logo">
-                <img src="images/logo-devcoffee.png" alt="Dev Coffee Logo">
-            </div>
-        </div>
-    </footer>
+    <?php include '../includes/footer.php'; ?>s
 
     <script src="../js/sobre.js"></script>
 </body>
