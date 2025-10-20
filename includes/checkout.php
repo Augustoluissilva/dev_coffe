@@ -167,7 +167,7 @@ if (session_status() === PHP_SESSION_NONE) {
         <!-- Informações do PIX -->
         <div id="pix-info" class="pix-info">
             <h3>Pague com PIX</h3>
-            <p>Copie o código abaixo ou escaneie o QR Code no seu app bancário.</p>
+            <p>Copie o código abaixo no seu app bancário.</p>
             <div class="pix-key" id="pix-key"></div>
             <div class="qr-code">
                
