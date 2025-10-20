@@ -90,6 +90,9 @@ if (!file_exists($upload_dir)) {
     mkdir($upload_dir, 0777, true);
 }
 
+// Variável para armazenar dados do produto em edição
+$editing_product = null;
+
 // Processar ações POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Ação de cadastrar novo produto
@@ -220,6 +223,103 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
+    // Ação de editar produto
+    if (isset($_POST['edit_product'])) {
+        $id_produto = (int)$_POST['id_produto'];
+        $nome = trim($_POST['nome']);
+        $descricao = trim($_POST['descricao']);
+        $preco = floatval($_POST['preco']);
+        $peso = !empty($_POST['peso']) ? floatval($_POST['peso']) : NULL;
+        $id_categoria = (int)$_POST['id_categoria'];
+        $id_tipo_cafe = !empty($_POST['id_tipo_cafe']) ? (int)$_POST['id_tipo_cafe'] : NULL;
+        $id_marca_cafe = !empty($_POST['id_marca_cafe']) ? (int)$_POST['id_marca_cafe'] : NULL;
+        $estoque = (int)$_POST['estoque'];
+        
+        $imagem_url = $_POST['imagem_url_atual'];
+        $imagem_nome = $_POST['imagem_nome_atual'];
+        
+        // Verificar qual método de imagem foi usado
+        $metodo_imagem = $_POST['metodo_imagem'];
+        
+        if ($metodo_imagem === 'upload') {
+            // Processar upload da nova imagem
+            if (isset($_FILES['imagem_upload']) && $_FILES['imagem_upload']['error'] === UPLOAD_ERR_OK) {
+                $file = $_FILES['imagem_upload'];
+                $file_extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                $file_size = $file['size'];
+                
+                // Validar tipo de arquivo
+                if (!in_array($file_extension, $allowed_types)) {
+                    $_SESSION['admin_message'] = "❌ Erro: Apenas arquivos JPG, JPEG, PNG, GIF e WEBP são permitidos.";
+                    header("Location: ".$_SERVER['PHP_SELF']);
+                    exit();
+                }
+                
+                // Validar tamanho do arquivo
+                if ($file_size > $max_size) {
+                    $_SESSION['admin_message'] = "❌ Erro: O arquivo deve ter no máximo 5MB.";
+                    header("Location: ".$_SERVER['PHP_SELF']);
+                    exit();
+                }
+                
+                // Deletar imagem antiga se existir
+                if (!empty($imagem_nome)) {
+                    $old_file_path = $upload_dir . $imagem_nome;
+                    if (file_exists($old_file_path)) {
+                        unlink($old_file_path);
+                    }
+                }
+                
+                // Gerar nome único para o novo arquivo
+                $imagem_nome = 'produto_' . uniqid() . '_' . time() . '.' . $file_extension;
+                $upload_path = $upload_dir . $imagem_nome;
+                
+                // Mover arquivo
+                if (move_uploaded_file($file['tmp_name'], $upload_path)) {
+                    $imagem_url = 'uploads/produtos/' . $imagem_nome;
+                } else {
+                    $_SESSION['admin_message'] = "❌ Erro ao fazer upload da nova imagem.";
+                    header("Location: ".$_SERVER['PHP_SELF']);
+                    exit();
+                }
+            }
+        } else {
+            // Usar URL externa
+            $nova_imagem_url = trim($_POST['imagem_url']);
+            if (!empty($nova_imagem_url)) {
+                // Se mudou a URL, deletar imagem antiga se existir
+                if (!empty($imagem_nome) && $nova_imagem_url != $imagem_url) {
+                    $old_file_path = $upload_dir . $imagem_nome;
+                    if (file_exists($old_file_path)) {
+                        unlink($old_file_path);
+                    }
+                    $imagem_nome = ''; // Limpar nome do arquivo pois agora é URL externa
+                }
+                $imagem_url = $nova_imagem_url;
+                
+                // Validar URL da imagem
+                if (!filter_var($imagem_url, FILTER_VALIDATE_URL)) {
+                    $_SESSION['admin_message'] = "❌ Erro: Por favor, informe uma URL válida para a imagem.";
+                    header("Location: ".$_SERVER['PHP_SELF']);
+                    exit();
+                }
+            }
+        }
+        
+        // Atualizar o produto
+        $update_produto = $conn->prepare("UPDATE produtos SET nome = ?, descricao = ?, preco = ?, peso = ?, imagem = ?, imagem_nome = ?, id_categoria = ?, id_tipo_cafe = ?, id_marca_cafe = ?, estoque = ? WHERE id_produto = ?");
+        $update_produto->bind_param("ssddssiiiii", $nome, $descricao, $preco, $peso, $imagem_url, $imagem_nome, $id_categoria, $id_tipo_cafe, $id_marca_cafe, $estoque, $id_produto);
+        
+        if ($update_produto->execute()) {
+            $_SESSION['admin_message'] = "✅ Produto atualizado com sucesso!";
+        } else {
+            $_SESSION['admin_message'] = "❌ Erro ao atualizar produto: " . $conn->error;
+        }
+        
+        header("Location: ".$_SERVER['PHP_SELF']);
+        exit();
+    }
+    
     // Ação de deletar produto
     if (isset($_POST['delete_product'])) {
         $id_produto = (int)$_POST['id_produto'];
@@ -253,6 +353,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: ".$_SERVER['PHP_SELF']);
         exit();
     }
+}
+
+// Processar ação GET para editar produto
+if (isset($_GET['edit'])) {
+    $id_produto = (int)$_GET['edit'];
+    
+    $select_produto = $conn->prepare("SELECT * FROM produtos WHERE id_produto = ?");
+    $select_produto->bind_param("i", $id_produto);
+    $select_produto->execute();
+    $result = $select_produto->get_result();
+    
+    if ($result->num_rows > 0) {
+        $editing_product = $result->fetch_assoc();
+    } else {
+        $_SESSION['admin_message'] = "❌ Produto não encontrado!";
+        header("Location: ".$_SERVER['PHP_SELF']);
+        exit();
+    }
+}
+
+// Processar ação GET para cancelar edição
+if (isset($_GET['cancel_edit'])) {
+    $editing_product = null;
+    header("Location: ".$_SERVER['PHP_SELF']);
+    exit();
 }
 
 // Obter mensagem de feedback se existir
@@ -483,6 +608,23 @@ $result_marcas_cafe = $conn->query($sql_marcas_cafe);
             background: #218838;
         }
 
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -552,6 +694,12 @@ $result_marcas_cafe = $conn->query($sql_marcas_cafe);
             display: flex;
             gap: 10px;
             margin-top: 15px;
+        }
+
+        .product-actions .btn {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 12px;
         }
 
         .message {
@@ -642,6 +790,18 @@ $result_marcas_cafe = $conn->query($sql_marcas_cafe);
             color: #856404;
         }
 
+        .edit-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            color: #856404;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         @media (max-width: 768px) {
             .form-grid {
                 grid-template-columns: 1fr;
@@ -659,6 +819,10 @@ $result_marcas_cafe = $conn->query($sql_marcas_cafe);
             .tabs {
                 flex-direction: column;
             }
+            
+            .product-actions {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -670,7 +834,7 @@ $result_marcas_cafe = $conn->query($sql_marcas_cafe);
             </div>
             <div class="admin-actions">
                 <span>Bem-vindo, <?= htmlspecialchars($_SESSION['admin_nome']) ?></span>
-                <a href="../index.php" class="btn btn-success">Ver Site</a>
+                <a href="../includes/index.php" class="btn btn-success">Ver Site</a>
                 <a href="admin_logout.php" class="btn btn-danger">Sair</a>
             </div>
         </div>
@@ -680,6 +844,18 @@ $result_marcas_cafe = $conn->query($sql_marcas_cafe);
         <?php if ($admin_message): ?>
             <div class="message <?= strpos($admin_message, '❌') !== false ? 'error' : 'success' ?>">
                 <?= $admin_message ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($editing_product): ?>
+            <div class="edit-notice">
+                <div>
+                    <i class="fas fa-edit"></i> <strong>Editando Produto:</strong> 
+                    <?= htmlspecialchars($editing_product['nome']) ?> (ID: <?= $editing_product['id_produto'] ?>)
+                </div>
+                <a href="?cancel_edit=true" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar Edição
+                </a>
             </div>
         <?php endif; ?>
 
@@ -720,9 +896,12 @@ $result_marcas_cafe = $conn->query($sql_marcas_cafe);
             </div>
         </div>
 
-        <!-- Formulário de Cadastro -->
+        <!-- Formulário de Cadastro/Edição -->
         <div class="admin-section">
-            <h2><i class="fas fa-plus-circle"></i> Cadastrar Novo Produto</h2>
+            <h2>
+                <i class="fas <?= $editing_product ? 'fa-edit' : 'fa-plus-circle' ?>"></i> 
+                <?= $editing_product ? 'Editar Produto' : 'Cadastrar Novo Produto' ?>
+            </h2>
             
             <div class="tab-container">
                 <div class="tabs">
@@ -735,33 +914,47 @@ $result_marcas_cafe = $conn->query($sql_marcas_cafe);
                 </div>
                 
                 <form method="POST" enctype="multipart/form-data">
+                    <?php if ($editing_product): ?>
+                        <input type="hidden" name="id_produto" value="<?= $editing_product['id_produto'] ?>">
+                        <input type="hidden" name="imagem_url_atual" value="<?= htmlspecialchars($editing_product['imagem']) ?>">
+                        <input type="hidden" name="imagem_nome_atual" value="<?= htmlspecialchars($editing_product['imagem_nome']) ?>">
+                    <?php endif; ?>
+                    
                     <input type="hidden" name="metodo_imagem" id="metodo_imagem" value="upload">
                     
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="nome"><i class="fas fa-tag"></i> Nome do Produto:</label>
-                            <input type="text" id="nome" name="nome" required placeholder="Ex: Café Frutado Premium">
+                            <input type="text" id="nome" name="nome" required 
+                                   placeholder="Ex: Café Frutado Premium"
+                                   value="<?= $editing_product ? htmlspecialchars($editing_product['nome']) : '' ?>">
                         </div>
                         
                         <div class="form-group">
                             <label for="preco"><i class="fas fa-dollar-sign"></i> Preço (R$):</label>
-                            <input type="number" id="preco" name="preco" step="0.01" min="0" required placeholder="0.00">
+                            <input type="number" id="preco" name="preco" step="0.01" min="0" required 
+                                   placeholder="0.00"
+                                   value="<?= $editing_product ? number_format($editing_product['preco'], 2, '.', '') : '' ?>">
                         </div>
                         
                         <div class="form-group">
                             <label for="peso"><i class="fas fa-weight"></i> Peso (g):</label>
-                            <input type="number" id="peso" name="peso" step="0.01" min="0" placeholder="Opcional">
+                            <input type="number" id="peso" name="peso" step="0.01" min="0" 
+                                   placeholder="Opcional"
+                                   value="<?= $editing_product && $editing_product['peso'] ? number_format($editing_product['peso'], 0, '.', '') : '' ?>">
                         </div>
                         
                         <div class="form-group">
                             <label for="estoque"><i class="fas fa-boxes"></i> Estoque:</label>
-                            <input type="number" id="estoque" name="estoque" min="0" value="0" required>
+                            <input type="number" id="estoque" name="estoque" min="0" required
+                                   value="<?= $editing_product ? $editing_product['estoque'] : '0' ?>">
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label for="descricao"><i class="fas fa-align-left"></i> Descrição:</label>
-                        <textarea id="descricao" name="descricao" rows="3" placeholder="Descreva o produto..."></textarea>
+                        <textarea id="descricao" name="descricao" rows="3" 
+                                  placeholder="Descreva o produto..."><?= $editing_product ? htmlspecialchars($editing_product['descricao']) : '' ?></textarea>
                     </div>
                     
                     <!-- Upload de Imagem -->
@@ -776,7 +969,14 @@ $result_marcas_cafe = $conn->query($sql_marcas_cafe);
                                     <i class="fas fa-info-circle"></i> Formatos: JPG, JPEG, PNG, GIF, WEBP | Máx: 5MB
                                 </div>
                             </div>
-                            <div class="image-preview" id="imagePreview"></div>
+                            <div class="image-preview" id="imagePreview">
+                                <?php if ($editing_product && !empty($editing_product['imagem'])): ?>
+                                    <img src="<?= htmlspecialchars('../' . $editing_product['imagem']) ?>" 
+                                         alt="Imagem atual" 
+                                         onerror="this.style.display='none'">
+                                    <p><i class="fas fa-info-circle"></i> Imagem atual do produto</p>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                     
@@ -784,7 +984,9 @@ $result_marcas_cafe = $conn->query($sql_marcas_cafe);
                     <div class="tab-content" id="url-tab">
                         <div class="form-group">
                             <label for="imagem_url"><i class="fas fa-link"></i> URL da Imagem:</label>
-                            <input type="text" id="imagem_url" name="imagem_url" placeholder="https://exemplo.com/imagem.jpg">
+                            <input type="text" id="imagem_url" name="imagem_url" 
+                                   placeholder="https://exemplo.com/imagem.jpg"
+                                   value="<?= $editing_product && empty($editing_product['imagem_nome']) ? htmlspecialchars($editing_product['imagem']) : '' ?>">
                         </div>
                     </div>
                     
@@ -797,7 +999,10 @@ $result_marcas_cafe = $conn->query($sql_marcas_cafe);
                                 if ($result_categorias->num_rows > 0): 
                                     while ($row = $result_categorias->fetch_assoc()): 
                                 ?>
-                                    <option value="<?= $row['id_categoria'] ?>"><?= htmlspecialchars($row['nome']) ?></option>
+                                    <option value="<?= $row['id_categoria'] ?>" 
+                                        <?= ($editing_product && $editing_product['id_categoria'] == $row['id_categoria']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($row['nome']) ?>
+                                    </option>
                                 <?php 
                                     endwhile;
                                 else:
@@ -815,7 +1020,10 @@ $result_marcas_cafe = $conn->query($sql_marcas_cafe);
                                 if ($result_tipos_cafe->num_rows > 0): 
                                     while ($row = $result_tipos_cafe->fetch_assoc()): 
                                 ?>
-                                    <option value="<?= $row['id_tipo'] ?>"><?= htmlspecialchars($row['nome']) ?></option>
+                                    <option value="<?= $row['id_tipo'] ?>"
+                                        <?= ($editing_product && $editing_product['id_tipo_cafe'] == $row['id_tipo']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($row['nome']) ?>
+                                    </option>
                                 <?php 
                                     endwhile;
                                 else:
@@ -833,7 +1041,10 @@ $result_marcas_cafe = $conn->query($sql_marcas_cafe);
                                 if ($result_marcas_cafe->num_rows > 0): 
                                     while ($row = $result_marcas_cafe->fetch_assoc()): 
                                 ?>
-                                    <option value="<?= $row['id_marca'] ?>"><?= htmlspecialchars($row['nome']) ?></option>
+                                    <option value="<?= $row['id_marca'] ?>"
+                                        <?= ($editing_product && $editing_product['id_marca_cafe'] == $row['id_marca']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($row['nome']) ?>
+                                    </option>
                                 <?php 
                                     endwhile;
                                 else:
@@ -844,9 +1055,15 @@ $result_marcas_cafe = $conn->query($sql_marcas_cafe);
                         </div>
                     </div>
                     
-                    <button type="submit" name="add_product" class="btn" style="font-size: 16px; padding: 15px 30px;">
-                        <i class="fas fa-save"></i> Cadastrar Produto
-                    </button>
+                    <?php if ($editing_product): ?>
+                        <button type="submit" name="edit_product" class="btn btn-warning" style="font-size: 16px; padding: 15px 30px;">
+                            <i class="fas fa-save"></i> Atualizar Produto
+                        </button>
+                    <?php else: ?>
+                        <button type="submit" name="add_product" class="btn" style="font-size: 16px; padding: 15px 30px;">
+                            <i class="fas fa-save"></i> Cadastrar Produto
+                        </button>
+                    <?php endif; ?>
                 </form>
             </div>
         </div>
@@ -898,6 +1115,9 @@ $result_marcas_cafe = $conn->query($sql_marcas_cafe);
                                 </div>
                                 
                                 <div class="product-actions">
+                                    <a href="?edit=<?= $product['id_produto'] ?>" class="btn btn-warning">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </a>
                                     <form method="POST" style="flex: 1;">
                                         <input type="hidden" name="id_produto" value="<?= $product['id_produto'] ?>">
                                         <button type="submit" name="delete_product" class="btn btn-danger" 
@@ -1010,9 +1230,13 @@ $result_marcas_cafe = $conn->query($sql_marcas_cafe);
             const urlInput = document.getElementById('imagem_url');
             
             if (metodoImagem === 'upload' && !fileInput.files.length) {
-                e.preventDefault();
-                alert('❌ Por favor, selecione uma imagem para upload.');
-                return;
+                // Se estiver editando e não selecionou nova imagem, está ok
+                const isEditing = <?= $editing_product ? 'true' : 'false' ?>;
+                if (!isEditing) {
+                    e.preventDefault();
+                    alert('❌ Por favor, selecione uma imagem para upload.');
+                    return;
+                }
             }
             
             if (metodoImagem === 'url' && !urlInput.value.trim()) {
@@ -1037,12 +1261,28 @@ $result_marcas_cafe = $conn->query($sql_marcas_cafe);
 
             // Limpar preview quando mudar para URL
             if (tabName === 'url') {
-                imagePreview.innerHTML = '';
-                fileInput.value = '';
+                // Não limpar completamente se estiver editando e já tiver uma imagem de URL
+                const isEditing = <?= $editing_product ? 'true' : 'false' ?>;
+                const hasUrlImage = <?= ($editing_product && empty($editing_product['imagem_nome'])) ? 'true' : 'false' ?>;
+                
+                if (!isEditing || !hasUrlImage) {
+                    imagePreview.innerHTML = '';
+                    fileInput.value = '';
+                }
             }
         }
+
+        // Auto-selecionar tab correta baseada no produto em edição
+        document.addEventListener('DOMContentLoaded', function() {
+            const isEditing = <?= $editing_product ? 'true' : 'false' ?>;
+            const hasUrlImage = <?= ($editing_product && empty($editing_product['imagem_nome'])) ? 'true' : 'false' ?>;
+            
+            if (isEditing && hasUrlImage) {
+                switchTab('url');
+            }
+        });
     </script>
 </body>
 </html>
 
-<?php $conn->close(); ?>```
+<?php $conn->close(); ?>
