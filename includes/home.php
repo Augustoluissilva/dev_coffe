@@ -19,6 +19,9 @@ if ($conn->connect_error) {
                     ORDER BY p.id_produto DESC 
                     LIMIT 8";
     $result_products = $conn->query($sql_products);
+    
+    // Fechar a conexão IMEDIATAMENTE após obter os dados
+    $conn->close();
 }
 
 if (!isset($_SESSION['usuario_id'])) {
@@ -96,7 +99,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
                 <h2>Nossos Produtos</h2>
             </div>
             
-            <?php if ($result_products && $result_products->num_rows > 0): ?>
+            <?php if (isset($result_products) && $result_products && $result_products->num_rows > 0): ?>
                 <div class="products-grid" id="products-grid">
                     <?php while ($product = $result_products->fetch_assoc()): 
                         $isNew = $product['id_produto'] > 0;
@@ -167,7 +170,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
                     <a href="produtos.php" class="cta-button">Ver Todos os Produtos</a>
                 </div>
                 
-            <?php elseif ($error_message): ?>
+            <?php elseif (isset($error_message)): ?>
                 <div class="no-products">
                     <i class="fas fa-exclamation-triangle"></i>
                     <h3>Erro</h3>
@@ -210,50 +213,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
     </section>
 
     <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-column">
-                    <h3>Dev Coffee</h3>
-                    <p>Há mais de 10 anos levando os melhores cafés do Brasil para todo o país. Qualidade, tradição e sabor em cada grão.</p>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-whatsapp"></i></a>
-                    </div>
-                </div>
-                <div class="footer-column">
-                    <h3>Institucional</h3>
-                    <a href="#">Sobre nós</a>
-                    <a href="#">Nossa história</a>
-                    <a href="#">Trabalhe conosco</a>
-                    <a href="#">Política de privacidade</a>
-                </div>
-                <div class="footer-column">
-                    <h3>Atendimento</h3>
-                    <a href="#">Central de ajuda</a>
-                    <a href="#">Frete e entrega</a>
-                    <a href="#">Trocas e devoluções</a>
-                    <a href="#">Formas de pagamento</a>
-                </div>
-                <div class="footer-column">
-                    <h3>Contato</h3>
-                    <p><i class="fas fa-map-marker-alt"></i> Rua do Café, 123 - São Paulo, SP</p>
-                    <p><i class="fas fa-phone"></i> (11) 9999-9999</p>
-                    <p><i class="fas fa-envelope"></i> contato@devcoffee.com.br</p>
-                    <div class="payment-methods">
-                        <i class="fab fa-cc-visa" style="font-size: 24px; margin-right: 10px;"></i>
-                        <i class="fab fa-cc-mastercard" style="font-size: 24px; margin-right: 10px;"></i>
-                        <i class="fab fa-cc-paypal" style="font-size: 24px; margin-right: 10px;"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 Dev Coffee. Todos os direitos reservados.</p>
-                <p>CNPJ: 12.345.678/0001-90</p>
-            </div>
-        </div>
-    </footer>
+    <?php include '../includes/footer.php'; ?>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -279,14 +239,36 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
             } else {
                 console.warn('Search bar not found. Ensure header.php includes an input with id="search-bar".');
             }
+
+            // Adicionar produtos ao carrinho
+            const addToCartButtons = document.querySelectorAll('.add-to-cart');
+            addToCartButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-product-id');
+                    const productName = this.getAttribute('data-product-name');
+                    const productPrice = this.getAttribute('data-product-price');
+                    
+                    // Aqui você pode adicionar a lógica para adicionar ao carrinho
+                    console.log('Adicionar ao carrinho:', {
+                        id: productId,
+                        nome: productName,
+                        preco: productPrice
+                    });
+                    
+                    // Exemplo de feedback visual
+                    const originalText = this.textContent;
+                    this.textContent = 'Adicionado!';
+                    this.style.background = '#28a745';
+                    this.disabled = true;
+                    
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                        this.style.background = '';
+                        this.disabled = false;
+                    }, 2000);
+                });
+            });
         });
     </script>
-
-<?php
-// Fechar a conexão com o banco de dados
-if (isset($conn) && $conn instanceof mysqli) {
-    $conn->close();
-}
-?>
 </body>
 </html>
