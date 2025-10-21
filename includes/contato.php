@@ -350,7 +350,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
                 <!-- Formulário -->
                 <div class="form-wrapper">
                     <h2><i class="fas fa-edit"></i> Envie sua Mensagem</h2>
-                    <form action="../processa_contato.php" method="POST">
+                    <form action="../includes/email_template.html" method="POST">
                         <div class="form-group">
                             <label for="nome"><i class="fas fa-user"></i> Nome Completo</label>
                             <input type="text" id="nome" name="nome" placeholder="Ex: João Silva" required>
