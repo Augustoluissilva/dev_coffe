@@ -1,118 +1,69 @@
 <?php
-// process_payment.php - Integração PIX Mercado Pago
-header('Content-Type: application/json');
+require_once '../config/database.php';
+session_start();
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+$database = new Database();
+$db = $database->getConnection();
 
-// Credenciais Mercado Pago
-$accessToken = 'SEU_ACCESS_TOKEN_AQUI'; // Substitua pelo Access Token de teste ou produção
-$apiUrl = 'https://api.mercadopago.com/v1/payments';
-$fallbackLink = 'https://mpago.la/2WaWo1s'; // Link fornecido para testes
+// ============================
+// SIMULAÇÃO DE PAGAMENTO PIX
+// ============================
 
-if (empty($accessToken)) {
-    echo json_encode(['success' => false, 'message' => 'Access Token não configurado.']);
+// Gerar pedido
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $data = json_decode(file_get_contents("php://input"), true);
+
+    $id_cliente = $_SESSION['usuario_id'] ?? null;
+    $itens = json_encode($data['items']);
+    $valor_total = $data['total'] ?? 0;
+    $forma_pagamento = 'pix';
+    $endereco_entrega = 'Retirada no balcão';
+    $taxa_entrega = 0.00;
+
+    if (!$id_cliente) {
+        echo json_encode(['success' => false, 'message' => 'Usuário não autenticado.']);
+        exit;
+    }
+
+    $query = "INSERT INTO pedidos 
+        (id_cliente, itens, status, valor_total, taxa_entrega, forma_pagamento, endereco_entrega) 
+        VALUES (:id_cliente, :itens, 'pendente', :valor_total, :taxa_entrega, :forma_pagamento, :endereco_entrega)";
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(":id_cliente", $id_cliente);
+    $stmt->bindParam(":itens", $itens);
+    $stmt->bindParam(":valor_total", $valor_total);
+    $stmt->bindParam(":taxa_entrega", $taxa_entrega);
+    $stmt->bindParam(":forma_pagamento", $forma_pagamento);
+    $stmt->bindParam(":endereco_entrega", $endereco_entrega);
+
+    if ($stmt->execute()) {
+        $id_pedido = $db->lastInsertId();
+
+        echo json_encode([
+            'success' => true,
+            'paymentId' => $id_pedido,
+            'pixCode' => '000201BR.GOV.BCB.PIX0114PIXFAKEDEVCOFFEE' . rand(1000, 9999),
+            'qrCode' => 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Pagamento+Simulado+DevCoffee'
+        ]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Erro ao criar pedido.']);
+    }
     exit;
 }
 
-$input = json_decode(file_get_contents('php://input'), true) ?: [];
-$check = $_GET['check'] ?? false;
-$paymentId = $_GET['id'] ?? '';
+// ============================
+// SIMULAÇÃO DE VERIFICAÇÃO PIX
+// ============================
+if (isset($_GET['check']) && isset($_GET['id'])) {
+    $id_pedido = $_GET['id'];
 
-if ($check && $paymentId) {
-    // Verificar status do pagamento
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, "$apiUrl/$paymentId");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . $accessToken,
-        'Content-Type: application/json'
-    ]);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Testes locais
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    // Atualiza o pedido como "entregue"
+    $query = "UPDATE pedidos SET status='entregue' WHERE id_pedido=:id";
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(":id", $id_pedido);
+    $stmt->execute();
 
-    $data = json_decode($response, true);
-    echo json_encode([
-        'success' => $httpCode === 200,
-        'status' => $data['status'] ?? 'pending'
-    ]);
+    echo json_encode(['success' => true, 'status' => 'approved']);
     exit;
-}
-
-$customerName = $input['customerName'] ?? '';
-$customerEmail = $input['customerEmail'] ?? '';
-$customerCpf = $input['customerCpf'] ?? '';
-$total = $input['total'] ?? 0;
-$items = $input['items'] ?? [];
-
-if (empty($customerName) || empty($customerEmail) || empty($customerCpf) || $total <= 0) {
-    echo json_encode(['success' => false, 'message' => 'Dados inválidos.']);
-    exit;
-}
-
-// Validar CPF
-if (!preg_match('/^\d{11}$/', $customerCpf)) {
-    echo json_encode(['success' => false, 'message' => 'CPF inválido.']);
-    exit;
-}
-
-// Criar pagamento PIX
-$requestBody = [
-    'transaction_amount' => $total,
-    'description' => 'Pedido Dev Coffee',
-    'payment_method_id' => 'pix',
-    'payer' => [
-        'email' => $customerEmail,
-        'first_name' => explode(' ', $customerName)[0],
-        'last_name' => implode(' ', array_slice(explode(' ', $customerName), 1)),
-        'identification' => [
-            'type' => 'CPF',
-            'number' => $customerCpf
-        ]
-    ],
-    'notification_url' => 'https://seusite.com/webhook-mercadopago', // Use ngrok para testes
-    'external_reference' => uniqid('pedido_'),
-    'items' => $items
-];
-
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, $apiUrl);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    'Authorization: Bearer ' . $accessToken,
-    'Content-Type: application/json'
-]);
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Testes locais
-$response = curl_exec($ch);
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-$curlError = curl_error($ch);
-curl_close($ch);
-
-if ($curlError) {
-    error_log("cURL Error: $curlError");
-    echo json_encode(['success' => false, 'message' => 'Erro de conexão com Mercado Pago.']);
-    exit;
-}
-
-$data = json_decode($response, true);
-
-if ($httpCode === 201 && isset($data['id'])) {
-    $_SESSION['payment_id'] = $data['id'];
-    $pixData = $data['point_of_interaction']['transaction_data'] ?? [];
-    echo json_encode([
-        'success' => true,
-        'paymentId' => $data['id'],
-        'pixCode' => $pixData['qr_code'] ?? $fallbackLink, // Usa link fornecido como fallback
-        'qrCode' => $pixData['qr_code_base64'] ? 'data:image/png;base64,' . $pixData['qr_code_base64'] : ''
-    ]);
-} else {
-    $errorMessage = $data['message'] ?? 'Erro HTTP ' . $httpCode;
-    error_log("Mercado Pago Error: $errorMessage - Response: " . $response);
-    echo json_encode(['success' => false, 'message' => $errorMessage]);
 }
 ?>

@@ -1,14 +1,37 @@
 <?php
-// checkout.php
 require_once '../config/config.php';
+require_once '../config/database.php';
+require_once '../models/Usuario.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$usuario_nome = $_SESSION['usuario_nome'] ?? '';
+$usuario_email = $_SESSION['usuario_email'] ?? '';
+$usuario_cpf = $_SESSION['usuario_cpf'] ?? '';
+
+// Se o CPF não estiver salvo na sessão, busca no banco
+if (empty($usuario_cpf)) {
+    $database = new Database();
+    $db = $database->getConnection();
+    $usuario = new Usuario($db);
+    if ($usuario->buscarPorId($_SESSION['usuario_id'])) {
+        $_SESSION['usuario_cpf'] = $usuario->cpf;
+        $usuario_cpf = $usuario->cpf;
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,7 +46,7 @@ if (session_status() === PHP_SESSION_NONE) {
             padding: 0;
         }
 
-   
+
 
         h1 {
             color: #6b4e31;
@@ -138,6 +161,7 @@ if (session_status() === PHP_SESSION_NONE) {
         }
     </style>
 </head>
+
 <body>
     <?php include 'header.php'; ?>
 
@@ -156,11 +180,17 @@ if (session_status() === PHP_SESSION_NONE) {
         <!-- Formulário de pagamento -->
         <form id="payment-form" class="payment-form">
             <label for="customer-name">Nome do Cliente</label>
-            <input type="text" id="customer-name" placeholder="Nome Completo" required>
+            <input type="text" id="customer-name" name="customer-name"
+                value="<?php echo htmlspecialchars($usuario_nome); ?>" readonly>
+
             <label for="customer-email">E-mail do Cliente</label>
-            <input type="email" id="customer-email" placeholder="email@exemplo.com" required>
+            <input type="email" id="customer-email" name="customer-email"
+                value="<?php echo htmlspecialchars($usuario_email); ?>" readonly>
+
             <label for="customer-cpf">CPF</label>
-            <input type="text" id="customer-cpf" placeholder="123.456.789-09" maxlength="14" required>
+            <input type="text" id="customer-cpf" name="customer-cpf"
+                value="<?php echo htmlspecialchars($usuario_cpf); ?>" readonly>
+
             <button type="submit" class="payment-button">Gerar PIX via Mercado Pago</button>
         </form>
 
@@ -170,18 +200,19 @@ if (session_status() === PHP_SESSION_NONE) {
             <p>Copie o código abaixo no seu app bancário.</p>
             <div class="pix-key" id="pix-key"></div>
             <div class="qr-code">
-               
+
             </div>
             <p id="pix-status">Aguardando pagamento...</p>
             <button id="check-payment" class="payment-button">Verificar Pagamento</button>
-            <p><a href="https://mpago.la/2WaWo1s" id="fallback-link" target="_blank">Pagar via link do Mercado Pago (teste)</a></p>
+            <!-- <p><a href="https://mpago.la/2WaWo1s" id="fallback-link" target="_blank">Pagar via link do Mercado Pago
+                    (teste)</a></p> -->
         </div>
     </div>
 
     <div class="notification" id="notification"></div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const checkoutItemsContainer = document.getElementById('checkout-items');
             const checkoutTotalAmount = document.getElementById('checkout-total-amount');
             const paymentForm = document.getElementById('payment-form');
@@ -224,7 +255,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
             // Formatar CPF
             const cpfInput = document.getElementById('customer-cpf');
-            cpfInput.addEventListener('input', function(e) {
+            cpfInput.addEventListener('input', function (e) {
                 let value = e.target.value.replace(/\D/g, '');
                 if (value.length > 11) value = value.slice(0, 11);
                 value = value.replace(/(\d{3})(\d)/, '$1.$2');
@@ -234,15 +265,15 @@ if (session_status() === PHP_SESSION_NONE) {
             });
 
             // Enviar formulário
-            paymentForm.addEventListener('submit', function(e) {
+            paymentForm.addEventListener('submit', function (e) {
                 e.preventDefault();
                 const customerName = document.getElementById('customer-name').value;
                 const customerEmail = document.getElementById('customer-email').value;
                 const customerCpf = document.getElementById('customer-cpf').value.replace(/\D/g, '');
                 const total = parseFloat(checkoutTotalAmount.textContent.replace(',', '.'));
 
-                if (!customerName || !customerEmail || !customerCpf || customerCpf.length !== 11) {
-                    showNotification('Preencha todos os campos corretamente.');
+                if (!customerName || !customerEmail || !customerCpf) {
+                    showNotification('Erro ao carregar dados do cliente.');
                     return;
                 }
 
@@ -267,59 +298,60 @@ if (session_status() === PHP_SESSION_NONE) {
                         items
                     })
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        paymentId = data.paymentId;
-                        pixKey.textContent = data.pixCode;
-                        qrImage.src = data.qrCode;
-                        pixInfo.style.display = 'block';
-                        paymentForm.style.display = 'none';
-                        showNotification('PIX gerado! Escaneie ou copie o código.');
-                    } else {
-                        // Mostrar link estático como fallback
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            paymentId = data.paymentId;
+                            pixKey.textContent = data.pixCode;
+                            qrImage.src = data.qrCode;
+                            pixInfo.style.display = 'block';
+                            paymentForm.style.display = 'none';
+                            showNotification('PIX gerado! Escaneie ou copie o código.');
+                        } else {
+                            // Mostrar link estático como fallback
+                            pixKey.textContent = 'https://mpago.la/2WaWo1s';
+                            pixInfo.style.display = 'block';
+                            paymentForm.style.display = 'none';
+                            showNotification('Erro ao gerar PIX. Use o link alternativo: https://mpago.la/2WaWo1s');
+                        }
+                        paymentButton.disabled = false;
+                        paymentButton.textContent = 'Gerar PIX via Mercado Pago';
+                    })
+                    .catch(error => {
+                        // showNotification('Erro ao processar. Use o link alternativo.');
+                        console.error('Erro:', error);
                         pixKey.textContent = 'https://mpago.la/2WaWo1s';
                         pixInfo.style.display = 'block';
                         paymentForm.style.display = 'none';
-                        showNotification('Erro ao gerar PIX. Use o link alternativo: https://mpago.la/2WaWo1s');
-                    }
-                    paymentButton.disabled = false;
-                    paymentButton.textContent = 'Gerar PIX via Mercado Pago';
-                })
-                .catch(error => {
-                    showNotification('Erro ao processar. Use o link alternativo.');
-                    console.error('Erro:', error);
-                    pixKey.textContent = 'https://mpago.la/2WaWo1s';
-                    pixInfo.style.display = 'block';
-                    paymentForm.style.display = 'none';
-                    paymentButton.disabled = false;
-                    paymentButton.textContent = 'Gerar PIX via Mercado Pago';
-                });
+                        paymentButton.disabled = false;
+                        paymentButton.textContent = 'Gerar PIX via Mercado Pago';
+                    });
             });
 
             // Verificar status
-            checkButton.addEventListener('click', function() {
+            checkButton.addEventListener('click', function () {
                 if (!paymentId) {
-                    showNotification('Nenhum pagamento gerado.');
-                    return;
+                    showNotification('Verificando pagamento simulado...');
+                    paymentId = 999; // simulação
                 }
                 fetch(`process_payment.php?check=1&id=${paymentId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.status === 'approved') {
-                        pixStatus.textContent = 'Pagamento confirmado!';
-                        localStorage.removeItem('cartItems');
-                        showNotification('Pagamento realizado com sucesso!');
-                        setTimeout(() => window.location.href = 'pedidos.php', 2000);
-                    } else {
-                        pixStatus.textContent = 'Pagamento pendente...';
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao verificar:', error);
-                    showNotification('Erro ao verificar pagamento.');
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.status === 'approved') {
+                            pixStatus.textContent = 'Pagamento confirmado!';
+                            localStorage.removeItem('cartItems');
+                            showNotification('Pagamento realizado com sucesso!');
+                            setTimeout(() => window.location.href = 'pedidos.php', 2000);
+                        } else {
+                            pixStatus.textContent = 'Pagamento pendente...';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao verificar:', error);
+                        showNotification('Erro ao verificar pagamento.');
+                    });
             });
+
 
             function showNotification(message) {
                 notification.textContent = message;
@@ -329,4 +361,5 @@ if (session_status() === PHP_SESSION_NONE) {
         });
     </script>
 </body>
+
 </html>

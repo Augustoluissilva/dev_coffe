@@ -1,109 +1,150 @@
-<?php include '../includes/header.php'; ?>
+<?php
+include '../includes/header.php';
+
+require_once '../config/database.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$database = new Database();
+$db = $database->getConnection();
+
+$query = "SELECT * FROM pedidos WHERE id_cliente = :id_cliente ORDER BY data_pedido DESC";
+$stmt = $db->prepare($query);
+$stmt->bindParam(":id_cliente", $_SESSION['usuario_id']);
+$stmt->execute();
+$pedidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meus Pedidos - Dev Coffee</title>
     <link rel="stylesheet" href="../css/pedidos.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
+
 <body>
     <div class="container">
-        <h1 class="page-title">Meus Pedidos</h1>
-        
-        <div class="orders-table">
-            <div class="table-header">
-                <div class="col-product">Produto</div>
-                <div class="col-order-number">Número do Pedido</div>
-                <div class="col-total">Total</div>
-                <div class="col-status">Status</div>
-            </div>
-
-            <div class="order-row">
-                <div class="col-product">
-                    <div class="product-info">
-                        <img src="images/cafe-preto.png" alt="Café Preto Sem Açúcar" class="product-image">
-                        <div class="product-details">
-                            <h3 class="product-name">Café Preto Sem Açúcar 200ml</h3>
-                            <p class="product-description">Café especial torra média</p>
+        <h1>Meus Pedidos</h1>
+        <?php if (count($pedidos) === 0): ?>
+            <p>Você ainda não fez nenhum pedido.</p>
+        <?php else: ?>
+            <div class="orders-table">
+                <?php foreach ($pedidos as $pedido): ?>
+                    <?php
+                    $itens = json_decode($pedido['itens'], true);
+                    $statusText = match ($pedido['status']) {
+                        'pendente' => 'Aguardando Pagamento',
+                        'preparando' => 'Em preparo',
+                        'saiu_entrega' => 'Saiu para entrega',
+                        'entregue' => 'Entregue',
+                        default => ucfirst($pedido['status'])
+                    };
+                    $statusIcon = match ($pedido['status']) {
+                        'pendente' => '🟡',
+                        'preparando' => '🟠',
+                        'saiu_entrega' => '🟣',
+                        'entregue' => '🟢',
+                        default => '⚪'
+                    };
+                    ?>
+                    <div class="order-row">
+                        <div class="col-product">
+                            <h3>Pedido #<?php echo $pedido['id_pedido']; ?></h3>
+                            <ul>
+                                <?php foreach ($itens as $item): ?>
+                                    <li><?php echo htmlspecialchars($item['title']) . " (x" . $item['quantity'] . ")"; ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                        <div class="col-total">
+                            <strong>R$ <?php echo number_format($pedido['valor_total'], 2, ',', '.'); ?></strong>
+                        </div>
+                        <div class="col-status">
+                            <div class="status">
+                                <span class="status-icon"><?php echo $statusIcon; ?></span>
+                                <span class="status-text"><?php echo $statusText; ?></span>
+                            </div>
+                        </div>
+                        <div class="col-action">
+                            <?php if ($pedido['status'] === 'pendente'): ?>
+                                <button class="btn-cancelar" data-id="<?php echo $pedido['id_pedido']; ?>">
+                                    Cancelar Pedido
+                                </button>
+                            <?php endif; ?>
                         </div>
                     </div>
-                </div>
-                <div class="col-order-number">#1111111</div>
-                <div class="col-total">R$ 15,00</div>
-                <div class="col-status">
-                    <div class="status delivered">
-                        <span class="status-icon">🟢</span>
-                        <span class="status-text">Entregue</span>
-                    </div>
-                    <button class="btn-buy-again">Comprar novamente</button>
-                </div>
+                <?php endforeach; ?>
             </div>
-
-            <div class="order-row">
-                <div class="col-product">
-                    <div class="product-info">
-                        <img src="images/donuts.png" alt="Donuts" class="product-image">
-                        <div class="product-details">
-                            <h3 class="product-name">Donuts 1 Unidade</h3>
-                            <p class="product-description">Donuts com cobertura de chocolate</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-order-number">#1111112</div>
-                <div class="col-total">R$ 10,00</div>
-                <div class="col-status">
-                    <div class="status delivered">
-                        <span class="status-icon">🟢</span>
-                        <span class="status-text">Entregue</span>
-                    </div>
-                    <button class="btn-buy-again">Comprar novamente</button>
-                </div>
-            </div>
-
-            <div class="order-row">
-                <div class="col-product">
-                    <div class="product-info">
-                        <img src="images/cappuccino.png" alt="Cappuccino" class="product-image">
-                        <div class="product-details">
-                            <h3 class="product-name">Cappuccino 300ml</h3>
-                            <p class="product-description">Cappuccino cremoso com canela</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-order-number">#1111113</div>
-                <div class="col-total">R$ 18,00</div>
-                <div class="col-status">
-                    <div class="status preparing" id="status-preparing">
-                        <span class="status-icon">🟡</span>
-                        <span class="status-text">Em preparo</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="order-row">
-                <div class="col-product">
-                    <div class="product-info">
-                        <img src="images/croissant.png" alt="Croissant" class="product-image">
-                        <div class="product-details">
-                            <h3 class="product-name">Croissant 1 Unidade</h3>
-                            <p class="product-description">Croissant de manteiga</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-order-number">#1111114</div>
-                <div class="col-total">R$ 12,00</div>
-                <div class="col-status">
-                    <div class="status delivery" id="status-delivery">
-                        <span class="status-icon">🟠</span>
-                        <span class="status-text">Motoboy a caminho</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <?php endif; ?>
     </div>
 
     <script src="../js/pedidos.js"></script>
+    <script>
+        document.querySelectorAll('.btn-cancelar').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id_pedido = btn.getAttribute('data-id');
+
+                Swal.fire({
+                    title: 'Cancelar pedido?',
+                    text: "Tem certeza que deseja cancelar este pedido? Esta ação não poderá ser desfeita.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sim, cancelar!',
+                    cancelButtonText: 'Não, manter'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch('cancelar_pedido.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id_pedido })
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: 'Cancelado!',
+                                        text: data.message,
+                                        icon: 'success',
+                                        confirmButtonColor: '#6b4e31'
+                                    }).then(() => location.reload());
+                                } else {
+                                    Swal.fire({
+                                        title: 'Ops!',
+                                        text: data.message,
+                                        icon: 'info',
+                                        confirmButtonColor: '#6b4e31'
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Erro:', error);
+                                Swal.fire({
+                                    title: 'Erro!',
+                                    text: 'Ocorreu um erro ao cancelar o pedido.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#6b4e31'
+                                });
+                            });
+                    }
+                });
+            });
+        });
+    </script>
+
 </body>
+
 </html>

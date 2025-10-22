@@ -1,5 +1,6 @@
 <?php
-class Usuario {
+class Usuario
+{
     private $conn;
     private $table_name = "usuarios";
 
@@ -18,11 +19,13 @@ class Usuario {
     public $token_expiracao;
     public $google_id;
 
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->conn = $db;
     }
 
-    public function cadastrar() {
+    public function cadastrar()
+    {
         // Primeiro verificar se email já existe
         if ($this->emailExiste()) {
             return "email_existe";
@@ -40,7 +43,7 @@ class Usuario {
         $query = "INSERT INTO " . $this->table_name . " 
                  SET nome_completo=:nome_completo, email=:email, senha=:senha, 
                      telefone=:telefone, cpf=:cpf, tipo='cliente', ativo=1";
-        
+
         $stmt = $this->conn->prepare($query);
 
         // Limpar dados
@@ -57,15 +60,25 @@ class Usuario {
         $stmt->bindParam(":telefone", $telefone_limpo);
         $stmt->bindParam(":cpf", $cpf_limpo);
 
-        if($stmt->execute()) {
+        if ($stmt->execute()) {
             $this->id_usuario = $this->conn->lastInsertId();
-            return true;
+            return [
+                'success' => true,
+                'id' => $this->id_usuario
+            ];
+        } else {
+            $erro = $stmt->errorInfo();
+            error_log("Erro ao cadastrar com Google: " . json_encode($erro));
+            return [
+                'success' => false,
+                'error' => $erro
+            ];
         }
-        return false;
     }
 
     // Método para cadastrar com Google
-    public function cadastrarComGoogle() {
+    public function cadastrarComGoogle()
+    {
         try {
             // Verificar se email já existe
             if ($this->emailExiste()) {
@@ -76,7 +89,7 @@ class Usuario {
                      SET nome_completo=:nome_completo, email=:email, senha=:senha, 
                          google_id=:google_id, telefone=:telefone, cpf=:cpf, 
                          tipo='cliente', ativo=1, data_cadastro=NOW()";
-            
+
             $stmt = $this->conn->prepare($query);
 
             // Limpar dados
@@ -105,40 +118,48 @@ class Usuario {
             $stmt->bindParam(":telefone", $this->telefone);
             $stmt->bindParam(":cpf", $this->cpf);
 
-            if($stmt->execute()) {
+            if ($stmt->execute()) {
                 $this->id_usuario = $this->conn->lastInsertId();
                 return true;
             }
+            $erro = $stmt->errorInfo();
+            error_log("Erro ao cadastrar com Google: " . json_encode($erro));
+
+
             return false;
-            
-        } catch(PDOException $exception) {
+
+        } catch (PDOException $exception) {
+            $erro = $stmt->errorInfo();
+            error_log("Erro SQL ao cadastrar com Google: " . json_encode($erro));
+
             error_log("Erro ao cadastrar com Google: " . $exception->getMessage());
             return false;
         }
     }
 
-    public function login() {
+    public function login()
+    {
         $query = "SELECT id_usuario, nome_completo, email, senha, tipo, google_id, ativo 
                  FROM " . $this->table_name . " 
                  WHERE email = :email AND ativo = 1";
-        
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":email", $this->email);
         $stmt->execute();
 
-        if($stmt->rowCount() == 1) {
+        if ($stmt->rowCount() == 1) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             // Verificar senha
-            if(password_verify($this->senha, $row['senha'])) {
+            if (password_verify($this->senha, $row['senha'])) {
                 $this->id_usuario = $row['id_usuario'];
                 $this->nome_completo = $row['nome_completo'];
                 $this->tipo = $row['tipo'];
                 $this->google_id = $row['google_id'] ?? '';
-                
+
                 // Atualizar último login
                 $this->atualizarUltimoLogin();
-                
+
                 return true;
             }
         }
@@ -146,45 +167,47 @@ class Usuario {
     }
 
     // Método para login com Google
-    public function loginComGoogle($google_id) {
+    public function loginComGoogle($google_id)
+    {
         $query = "SELECT id_usuario, nome_completo, email, tipo, google_id 
                  FROM " . $this->table_name . " 
                  WHERE google_id = :google_id AND ativo = 1";
-        
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":google_id", $google_id);
         $stmt->execute();
 
-        if($stmt->rowCount() == 1) {
+        if ($stmt->rowCount() == 1) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             $this->id_usuario = $row['id_usuario'];
             $this->nome_completo = $row['nome_completo'];
             $this->email = $row['email'];
             $this->tipo = $row['tipo'];
             $this->google_id = $row['google_id'];
-            
+
             // Atualizar último login
             $this->atualizarUltimoLogin();
-            
+
             return true;
         }
         return false;
     }
 
     // Método para buscar usuário por email
-    public function buscarPorEmail() {
+    public function buscarPorEmail()
+    {
         $query = "SELECT id_usuario, nome_completo, email, senha, telefone, cpf, tipo, google_id 
                  FROM " . $this->table_name . " 
                  WHERE email = :email AND ativo = 1";
-        
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":email", $this->email);
         $stmt->execute();
 
-        if($stmt->rowCount() == 1) {
+        if ($stmt->rowCount() == 1) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             $this->id_usuario = $row['id_usuario'];
             $this->nome_completo = $row['nome_completo'];
             $this->email = $row['email'];
@@ -193,25 +216,26 @@ class Usuario {
             $this->cpf = $row['cpf'];
             $this->tipo = $row['tipo'];
             $this->google_id = $row['google_id'] ?? '';
-            
+
             return true;
         }
         return false;
     }
 
     // Método para buscar usuário por Google ID
-    public function buscarPorGoogleId($google_id) {
+    public function buscarPorGoogleId($google_id)
+    {
         $query = "SELECT id_usuario, nome_completo, email, senha, telefone, cpf, tipo, google_id 
                  FROM " . $this->table_name . " 
                  WHERE google_id = :google_id AND ativo = 1";
-        
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":google_id", $google_id);
         $stmt->execute();
 
-        if($stmt->rowCount() == 1) {
+        if ($stmt->rowCount() == 1) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             $this->id_usuario = $row['id_usuario'];
             $this->nome_completo = $row['nome_completo'];
             $this->email = $row['email'];
@@ -220,18 +244,19 @@ class Usuario {
             $this->cpf = $row['cpf'];
             $this->tipo = $row['tipo'];
             $this->google_id = $row['google_id'];
-            
+
             return true;
         }
         return false;
     }
 
     // Método para vincular conta Google a usuário existente
-    public function vincularGoogle($id_usuario, $google_id) {
+    public function vincularGoogle($id_usuario, $google_id)
+    {
         $query = "UPDATE " . $this->table_name . " 
                  SET google_id = :google_id 
                  WHERE id_usuario = :id_usuario";
-        
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":google_id", $google_id);
         $stmt->bindParam(":id_usuario", $id_usuario);
@@ -240,31 +265,33 @@ class Usuario {
     }
 
     // Método para verificar se Google ID já existe
-    public function googleIdExiste($google_id = null) {
+    public function googleIdExiste($google_id = null)
+    {
         $google_id_to_check = $google_id ?: $this->google_id;
-        
+
         if (empty($google_id_to_check)) {
             return false;
         }
-        
+
         $query = "SELECT COUNT(*) as total FROM " . $this->table_name . " 
                  WHERE google_id = :google_id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":google_id", $google_id_to_check);
         $stmt->execute();
-        
+
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result['total'] > 0;
     }
 
     // Método para verificar se usuário existe por Google ID e retornar dados
-    public function googleIdExisteComDados($google_id) {
+    public function googleIdExisteComDados($google_id)
+    {
         $query = "SELECT id_usuario, nome_completo, email FROM " . $this->table_name . " 
                  WHERE google_id = :google_id AND ativo = 1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":google_id", $google_id);
         $stmt->execute();
-        
+
         if ($stmt->rowCount() > 0) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             $this->id_usuario = $row['id_usuario'];
@@ -275,8 +302,10 @@ class Usuario {
         return false;
     }
 
-    private function atualizarUltimoLogin() {
-        if (!$this->id_usuario) return false;
+    private function atualizarUltimoLogin()
+    {
+        if (!$this->id_usuario)
+            return false;
 
         $query = "UPDATE " . $this->table_name . " 
                  SET ultimo_login = NOW() 
@@ -286,25 +315,27 @@ class Usuario {
         return $stmt->execute();
     }
 
-    public function emailExiste() {
+    public function emailExiste()
+    {
         $query = "SELECT COUNT(*) as total FROM " . $this->table_name . " 
                  WHERE email = :email";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":email", $this->email);
         $stmt->execute();
-        
+
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result['total'] > 0;
     }
 
     // Método para buscar usuário por email e retornar dados
-    public function emailExisteComDados() {
+    public function emailExisteComDados()
+    {
         $query = "SELECT id_usuario, nome_completo, google_id FROM " . $this->table_name . " 
                  WHERE email = :email AND ativo = 1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":email", $this->email);
         $stmt->execute();
-        
+
         if ($stmt->rowCount() > 0) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             $this->id_usuario = $row['id_usuario'];
@@ -315,30 +346,32 @@ class Usuario {
         return false;
     }
 
-    public function cpfExiste() {
+    public function cpfExiste()
+    {
         $cpf_limpo = preg_replace('/[^0-9]/', '', $this->cpf);
-        
+
         $query = "SELECT COUNT(*) as total FROM " . $this->table_name . " 
                  WHERE cpf = :cpf";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":cpf", $cpf_limpo);
         $stmt->execute();
-        
+
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result['total'] > 0;
     }
 
     // Método para buscar usuário por ID
-    public function buscarPorId($id) {
+    public function buscarPorId($id)
+    {
         $query = "SELECT * FROM " . $this->table_name . " 
                  WHERE id_usuario = :id_usuario";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":id_usuario", $id);
         $stmt->execute();
 
-        if($stmt->rowCount() == 1) {
+        if ($stmt->rowCount() == 1) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             $this->id_usuario = $row['id_usuario'];
             $this->nome_completo = $row['nome_completo'];
             $this->email = $row['email'];
@@ -350,15 +383,17 @@ class Usuario {
             $this->data_cadastro = $row['data_cadastro'];
             $this->ultimo_login = $row['ultimo_login'];
             $this->google_id = $row['google_id'] ?? '';
-            
+
             return true;
         }
         return false;
     }
 
     // Método para atualizar perfil do usuário
-    public function atualizar() {
-        if (!$this->id_usuario) return false;
+    public function atualizar()
+    {
+        if (!$this->id_usuario)
+            return false;
 
         // Remover caracteres especiais
         $cpf_limpo = preg_replace('/[^0-9]/', '', $this->cpf);
@@ -368,7 +403,7 @@ class Usuario {
                  SET nome_completo=:nome_completo, email=:email, telefone=:telefone,
                      cpf=:cpf
                  WHERE id_usuario = :id_usuario";
-        
+
         $stmt = $this->conn->prepare($query);
 
         // Limpar dados
@@ -382,60 +417,72 @@ class Usuario {
         $stmt->bindParam(":cpf", $cpf_limpo);
         $stmt->bindParam(":id_usuario", $this->id_usuario);
 
-        if($stmt->execute()) {
+        if ($stmt->execute()) {
             return true;
         }
         return false;
     }
 
     // Método para alterar senha
-    public function alterarSenha($nova_senha) {
-        if (!$this->id_usuario) return false;
+    public function alterarSenha($nova_senha)
+    {
+        if (!$this->id_usuario)
+            return false;
 
         $query = "UPDATE " . $this->table_name . " 
                  SET senha = :senha 
                  WHERE id_usuario = :id_usuario";
         $stmt = $this->conn->prepare($query);
-        
+
         $senha_hash = password_hash($nova_senha, PASSWORD_DEFAULT);
-        
+
         $stmt->bindParam(":senha", $senha_hash);
         $stmt->bindParam(":id_usuario", $this->id_usuario);
 
-        if($stmt->execute()) {
+        if ($stmt->execute()) {
             return true;
         }
         return false;
     }
 
     // Método para listar todos os usuários (para administradores)
-    public function listarTodos() {
+    public function listarTodos()
+    {
         $query = "SELECT * FROM " . $this->table_name . " 
                  ORDER BY data_cadastro DESC";
-        
+
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
-        
+
         return $stmt;
     }
 
     // Método para processar login/cadastro com Google
-    public function processarGoogleAuth($google_id, $email, $nome) {
+    public function processarGoogleAuth($google_id, $email, $nome)
+    {
         // Primeiro verificar se já existe usuário com este Google ID
         if ($this->googleIdExisteComDados($google_id)) {
             // Usuário existe - fazer login
-            if ($this->loginComGoogle($google_id)) {
+            $result = $this->cadastrarComGoogle();
+            error_log("Resultado do cadastrarComGoogle: " . print_r($result, true));
+            error_log("ID gerado: " . $this->conn->lastInsertId());
+
+            if ($result) {
+                $this->id_usuario = $this->conn->lastInsertId();
+                error_log("Usuário cadastrado: ID = {$this->id_usuario}, Email = {$this->email}");
                 return [
                     'success' => true,
-                    'action' => 'login',
-                    'message' => 'Login realizado com sucesso!'
+                    'action' => 'signup',
+                    'message' => 'Cadastro realizado com sucesso!'
                 ];
             } else {
+                error_log("Falhou em cadastrar mesmo com query ok");
                 return [
                     'success' => false,
-                    'message' => 'Erro ao fazer login com Google.'
+                    'message' => 'Erro ao cadastrar com Google.'
                 ];
             }
+
         }
 
         // Verificar se email já existe (usuário cadastrado normalmente)
@@ -463,20 +510,29 @@ class Usuario {
         $this->email = $email;
         $this->google_id = $google_id;
         $this->telefone = 'Não informado';
-        $this->cpf = '000.000.000-00';
+        $this->cpf = '000.000.000-' . str_pad(rand(0, 99), 2, '0', STR_PAD_LEFT); // gera CPF único
 
-        if ($this->cadastrarComGoogle()) {
+        $resultadoCadastro = $this->cadastrarComGoogle();
+
+        error_log("Resultado do cadastro Google: " . var_export($resultadoCadastro, true));
+
+        if ($resultadoCadastro === true) {
+            $this->buscarPorEmail(); // garante ID preenchido
+            error_log("Cadastro Google bem-sucedido: ID {$this->id_usuario} | Email {$this->email}");
             return [
                 'success' => true,
                 'action' => 'signup',
                 'message' => 'Cadastro realizado com sucesso!'
             ];
         } else {
+            error_log("Falha ao cadastrar (resultado): " . json_encode($resultadoCadastro));
             return [
                 'success' => false,
                 'message' => 'Erro ao cadastrar com Google.'
             ];
         }
+
+
     }
 }
 ?>

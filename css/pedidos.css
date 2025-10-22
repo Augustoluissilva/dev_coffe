@@ -59,6 +59,7 @@ body {
 .col-product {
     display: flex;
     align-items: center;
+    justify-content: space-evenly;
 }
 
 .product-info {
@@ -138,6 +139,26 @@ body {
     font-size: 0.9rem;
 }
 
+ul {
+    list-style-type: none;
+}
+
+.btn-cancelar {
+    background-color: #d33;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s;
+}
+
+.btn-cancelar:hover {
+    background-color: #a00;
+}
+
+
 .btn-buy-again:hover {
     background-color: #3bb85d;
     transform: translateY(-1px);
@@ -146,14 +167,31 @@ body {
 
 /* Animações */
 @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
 }
 
 @keyframes move {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-2px); }
-    75% { transform: translateX(2px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-2px);
+    }
+
+    75% {
+        transform: translateX(2px);
+    }
 }
 
 .status.preparing .status-icon {

@@ -2,8 +2,8 @@
 session_start();
 
 // Verificar se usuário já está logado
-if(isset($_SESSION['usuario_id'])){
-    header("Location: home.php");
+if (isset($_SESSION['usuario_id'])) {
+    header("Location: ./home.php");
     exit();
 }
 
@@ -17,7 +17,7 @@ $usuario = new Usuario($db);
 $mensagem = "";
 $tipo_mensagem = "";
 
-if($_POST){
+if ($_POST) {
     $usuario->nome_completo = $_POST['nome'];
     $usuario->email = $_POST['email'];
     $usuario->senha = $_POST['senha'];
@@ -25,18 +25,18 @@ if($_POST){
     $usuario->cpf = $_POST['cpf'];
 
     // Validar dados
-    if($usuario->emailExiste()){
+    if ($usuario->emailExiste()) {
         $mensagem = "Este email já está cadastrado!";
         $tipo_mensagem = "error";
-    } else if($usuario->cpfExiste()){
+    } else if ($usuario->cpfExiste()) {
         $mensagem = "Este CPF já está cadastrado!";
         $tipo_mensagem = "error";
-    } else if(strlen($_POST['senha']) < 6){
+    } else if (strlen($_POST['senha']) < 6) {
         $mensagem = "A senha deve ter pelo menos 6 caracteres!";
         $tipo_mensagem = "error";
     } else {
         // Tentar cadastrar
-        if($usuario->cadastrar()){
+        if ($usuario->cadastrar()) {
             $mensagem = "Cadastro realizado com sucesso! Faça login para continuar.";
             $tipo_mensagem = "success";
             $_POST = array(); // Limpar formulário
@@ -49,19 +49,21 @@ if($_POST){
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro - DevCoffee</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="../css/cadastro.css">
-    
+
     <!-- Scripts para Google Login -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <style>
         .auth-divider {
             text-align: center;
@@ -69,7 +71,7 @@ if($_POST){
             color: #666;
             position: relative;
         }
-        
+
         .auth-divider::before,
         .auth-divider::after {
             content: '';
@@ -79,15 +81,15 @@ if($_POST){
             height: 1px;
             background: #ddd;
         }
-        
+
         .auth-divider::before {
             left: 0;
         }
-        
+
         .auth-divider::after {
             right: 0;
         }
-        
+
         .loading {
             opacity: 0.7;
             pointer-events: none;
@@ -117,13 +119,13 @@ if($_POST){
             transition: all 0.3s ease;
             margin: 0 auto;
         }
-        
+
         .google-btn-custom:hover {
             border-color: #4285f4;
             background: #f8f9fa;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
         .google-icon {
             width: 18px;
             height: 18px;
@@ -142,18 +144,20 @@ if($_POST){
         }
     </style>
 </head>
+
 <body>
     <div class="auth-container">
         <!-- Lado Esquerdo - Background Café -->
         <div class="auth-left">
             <div class="auth-logo-container">
-                <a href="index.php" class="auth-logo">
+                <a href="../index.php" class="auth-logo">
                     <img src="../img/devcoffee_logo.png" alt="Dev Coffee Logo">
                 </a>
             </div>
             <div class="auth-left-content">
                 <h1 class="auth-left-title">Olá de volta!</h1>
-                <p class="auth-left-subtitle">Para se manter conectado conosco por gentileza logue com suas informações pessoais</p>
+                <p class="auth-left-subtitle">Para se manter conectado conosco por gentileza logue com suas informações
+                    pessoais</p>
                 <a href="login.php" class="auth-btn-outline">LOGIN</a>
             </div>
         </div>
@@ -163,8 +167,8 @@ if($_POST){
             <div class="coffee-splash"></div>
             <div class="auth-form-container">
                 <h1 class="auth-title">Criar uma conta</h1>
-                
-                <?php if($mensagem): ?>
+
+                <?php if ($mensagem): ?>
                     <div class="auth-message <?php echo $tipo_mensagem; ?>">
                         <?php echo $mensagem; ?>
                     </div>
@@ -174,21 +178,13 @@ if($_POST){
                 <div id="google-container">
                     <!-- Google Sign-In Button -->
                     <div id="g_id_onload"
-                         data-client_id="154360656663-bftehkt4m59kv8r3sb94licc2b6nso43.apps.googleusercontent.com"
-                         data-context="signup"
-                         data-ux_mode="popup"
-                         data-callback="handleGoogleSignIn"
-                         data-auto_prompt="false">
+                        data-client_id="154360656663-bftehkt4m59kv8r3sb94licc2b6nso43.apps.googleusercontent.com"
+                        data-context="signup" data-ux_mode="popup" data-callback="handleGoogleSignIn"
+                        data-auto_prompt="false">
                     </div>
 
-                    <div class="g_id_signin"
-                         data-type="standard"
-                         data-shape="rectangular"
-                         data-theme="outline"
-                         data-text="signup_with"
-                         data-size="large"
-                         data-logo_alignment="left"
-                         data-width="300">
+                    <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline"
+                        data-text="signup_with" data-size="large" data-logo_alignment="left" data-width="300">
                     </div>
 
                     <!-- Fallback Button -->
@@ -202,13 +198,15 @@ if($_POST){
 
                 <form class="auth-form" method="POST" action="">
                     <div class="form-group">
-                        <input type="text" class="form-input" name="nome" placeholder="Nome" 
-                               value="<?php echo isset($_POST['nome']) ? htmlspecialchars($_POST['nome']) : ''; ?>" required>
+                        <input type="text" class="form-input" name="nome" placeholder="Nome"
+                            value="<?php echo isset($_POST['nome']) ? htmlspecialchars($_POST['nome']) : ''; ?>"
+                            required>
                     </div>
 
                     <div class="form-group">
-                        <input type="email" class="form-input" name="email" placeholder="Email" 
-                               value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" required>
+                        <input type="email" class="form-input" name="email" placeholder="Email"
+                            value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>"
+                            required>
                     </div>
 
                     <div class="form-group">
@@ -217,12 +215,14 @@ if($_POST){
 
                     <div class="form-row">
                         <div class="form-group">
-                            <input type="tel" class="form-input" name="telefone" placeholder="Telefone" 
-                                   value="<?php echo isset($_POST['telefone']) ? htmlspecialchars($_POST['telefone']) : ''; ?>" required>
+                            <input type="tel" class="form-input" name="telefone" placeholder="Telefone"
+                                value="<?php echo isset($_POST['telefone']) ? htmlspecialchars($_POST['telefone']) : ''; ?>"
+                                required>
                         </div>
                         <div class="form-group">
-                            <input type="text" class="form-input" name="cpf" placeholder="CPF" 
-                                   value="<?php echo isset($_POST['cpf']) ? htmlspecialchars($_POST['cpf']) : ''; ?>" required>
+                            <input type="text" class="form-input" name="cpf" placeholder="CPF"
+                                value="<?php echo isset($_POST['cpf']) ? htmlspecialchars($_POST['cpf']) : ''; ?>"
+                                required>
                         </div>
                     </div>
 
@@ -239,14 +239,14 @@ if($_POST){
         // Função chamada quando o Google Sign-In é bem-sucedido
         function handleGoogleSignIn(response) {
             console.log('Google Sign-In response:', response);
-            
+
             if (!response.credential) {
                 showError('Não foi possível obter as credenciais do Google.');
                 return;
             }
 
             showLoading(true);
-            
+
             // Decodificar o token para debug
             try {
                 const tokenParts = response.credential.split('.');
@@ -262,47 +262,47 @@ if($_POST){
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     credential: response.credential
                 })
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Erro no servidor: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Server response:', data);
-                
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Sucesso!',
-                        text: data.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.href = 'home.php';
-                    });
-                } else {
-                    showError(data.message || 'Erro ao processar cadastro com Google.');
-                }
-            })
-            .catch(error => {
-                console.error('Fetch error:', error);
-                showError('Erro de conexão: ' + error.message);
-            })
-            .finally(() => {
-                showLoading(false);
-            });
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro no servidor: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Server response:', data);
+
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Sucesso!',
+                            text: data.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = 'home.php';
+                        });
+                    } else {
+                        showError(data.message || 'Erro ao processar cadastro com Google.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    showError('Erro de conexão: ' + error.message);
+                })
+                .finally(() => {
+                    showLoading(false);
+                });
         }
 
         // Função para mostrar/ocultar loading
         function showLoading(show) {
             const googleBtn = document.querySelector('.g_id_signin');
             const manualBtn = document.getElementById('googleManualBtn');
-            
+
             if (show) {
                 if (googleBtn) googleBtn.style.opacity = '0.6';
                 if (manualBtn) manualBtn.classList.add('google-loading');
@@ -327,7 +327,7 @@ if($_POST){
             const manualBtn = document.getElementById('googleManualBtn');
             if (!manualBtn) return;
 
-            manualBtn.addEventListener('click', function() {
+            manualBtn.addEventListener('click', function () {
                 if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
                     // Se a API está carregada, use o método padrão
                     google.accounts.id.prompt();
@@ -357,30 +357,27 @@ if($_POST){
             if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
                 console.log('✅ Google API carregada com sucesso');
                 googleAPILoaded = true;
-                
+
                 // Ocultar botão manual se o Google estiver funcionando
                 const manualBtn = document.getElementById('googleManualBtn');
                 if (manualBtn) {
                     manualBtn.classList.add('hidden');
                 }
-                
+
                 return true;
             }
             return false;
         }
 
         // Inicialização quando a página carrega
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Página de cadastro carregada');
+        document.addEventListener('DOMContentLoaded', function () {
 
             // Verificar imediatamente se o Google API carregou
             if (!checkGoogleAPI()) {
-                console.log('⚠️ Google API não carregada - aguardando...');
-                
+
                 // Tentar verificar novamente após 2 segundos
                 setTimeout(() => {
                     if (!checkGoogleAPI()) {
-                        console.log('❌ Google API ainda não carregada - mostrando fallback');
                         const manualBtn = document.getElementById('googleManualBtn');
                         if (manualBtn) {
                             manualBtn.classList.remove('hidden');
@@ -391,7 +388,7 @@ if($_POST){
                 // Última tentativa após 5 segundos
                 setTimeout(() => {
                     if (!checkGoogleAPI()) {
-                        console.log('💀 Google API falhou ao carregar');
+                        console.log('Google API falhou ao carregar');
                         const manualBtn = document.getElementById('googleManualBtn');
                         if (manualBtn) {
                             manualBtn.classList.remove('hidden');
@@ -412,7 +409,7 @@ if($_POST){
             // Máscara para Telefone
             const telefoneInput = document.querySelector('input[name="telefone"]');
             if (telefoneInput) {
-                telefoneInput.addEventListener('input', function(e) {
+                telefoneInput.addEventListener('input', function (e) {
                     let value = e.target.value.replace(/\D/g, '');
                     if (value.length <= 11) {
                         value = value.replace(/(\d{2})(\d)/, '($1) $2');
@@ -425,7 +422,7 @@ if($_POST){
             // Máscara para CPF
             const cpfInput = document.querySelector('input[name="cpf"]');
             if (cpfInput) {
-                cpfInput.addEventListener('input', function(e) {
+                cpfInput.addEventListener('input', function (e) {
                     let value = e.target.value.replace(/\D/g, '');
                     if (value.length <= 11) {
                         value = value.replace(/(\d{3})(\d)/, '$1.$2');
@@ -441,4 +438,5 @@ if($_POST){
         window.handleGoogleSignIn = handleGoogleSignIn;
     </script>
 </body>
+
 </html>

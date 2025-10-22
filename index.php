@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DEV COFFEE - Café Premium</title>
-    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="./css/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
     <!-- Header -->
     <header>
         <div class="container header-container">
-            <img src="../img/devcoffee_logo.png" alt="Logo DEV COFFEE" class="logo">
-            
+            <img src="./img/devcoffee_logo.png" alt="Logo DEV COFFEE" class="logo">
+
             <nav>
                 <ul>
                     <li><a href="#home">Home</a></li>
@@ -21,12 +23,12 @@
                     <li><a href="#avaliacoes">Avaliações</a></li>
                 </ul>
             </nav>
-            
+
             <div class="auth-buttons">
-                <a href="login.php">Login</a>
-                <a href="cadastro.php">Cadastro</a>
+                <a href="./includes/login.php">Login</a>
+                <a href="./includes/cadastro.php">Cadastro</a>
             </div>
-            
+
             <div class="mobile-menu">
                 <i class="fas fa-bars"></i>
             </div>
@@ -40,7 +42,8 @@
                 <h2 class="hero-subtitle">O sabor que desperta suas ideias.</h2>
                 <h1 class="hero-title">DEV <span>COFFEE</span></h1>
                 <p class="hero-description">
-                    Descubra o melhor café especial selecionado das melhores plantações do mundo. Cada xícara é uma experiência única que combina tradição e inovação.
+                    Descubra o melhor café especial selecionado das melhores plantações do mundo. Cada xícara é uma
+                    experiência única que combina tradição e inovação.
                 </p>
                 <a href="#menu" class="cta-button">Ver Menu</a>
             </div>
@@ -56,12 +59,16 @@
             <div class="sobre-content">
                 <div class="sobre-text">
                     <h3>Nossa História</h3>
-                    <p>Desde 2025, a DEV COFFEE tem se dedicado a oferecer os melhores grãos de café especial, selecionados cuidadosamente das regiões mais prestigiadas do mundo.</p>
-                    <p>Trabalhamos diretamente com produtores que compartilham nosso compromisso com a qualidade e sustentabilidade. Cada etapa do processo é supervisionada para garantir que você receba uma experiência excepcional em cada xícara.</p>
+                    <p>Desde 2025, a DEV COFFEE tem se dedicado a oferecer os melhores grãos de café especial,
+                        selecionados cuidadosamente das regiões mais prestigiadas do mundo.</p>
+                    <p>Trabalhamos diretamente com produtores que compartilham nosso compromisso com a qualidade e
+                        sustentabilidade. Cada etapa do processo é supervisionada para garantir que você receba uma
+                        experiência excepcional em cada xícara.</p>
                     <a href="#contato" class="btn">Entre em Contato</a>
                 </div>
                 <div class="sobre-image">
-                    <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Sobre a DEV COFFEE">
+                    <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+                        alt="Sobre a DEV COFFEE">
                 </div>
             </div>
         </div>
@@ -187,60 +194,61 @@
 
     <script>
         // Mobile Menu Toggle
-document.addEventListener('DOMContentLoaded', function() {
-    const mobileMenu = document.querySelector('.mobile-menu');
-    const nav = document.querySelector('nav ul');
-    
-    mobileMenu.addEventListener('click', function() {
-        nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';
-        
-        // Change icon based on menu state
-        const icon = this.querySelector('i');
-        if (nav.style.display === 'flex') {
-            icon.classList.remove('fa-bars');
-            icon.classList.add('fa-times');
-        } else {
-            icon.classList.remove('fa-times');
-            icon.classList.add('fa-bars');
-        }
-    });
-    
-    // Smooth scroll para links internos
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
+        document.addEventListener('DOMContentLoaded', function () {
+            const mobileMenu = document.querySelector('.mobile-menu');
+            const nav = document.querySelector('nav ul');
+
+            mobileMenu.addEventListener('click', function () {
+                nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';
+
+                // Change icon based on menu state
+                const icon = this.querySelector('i');
+                if (nav.style.display === 'flex') {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+
+            // Smooth scroll para links internos
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
                 });
-            }
+            });
+
+            // Form submission
+            document.querySelector('form').addEventListener('submit', function (e) {
+                e.preventDefault();
+                alert('Obrigado pelo seu contato! Em breve retornaremos.');
+                this.reset();
+            });
+
+            // Close mobile menu when clicking on a link
+            const navLinks = document.querySelectorAll('nav a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function () {
+                    if (window.innerWidth <= 768) {
+                        nav.style.display = 'none';
+                        const icon = mobileMenu.querySelector('i');
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    }
+                });
+            });
         });
-    });
-    
-    // Form submission
-    document.querySelector('form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        alert('Obrigado pelo seu contato! Em breve retornaremos.');
-        this.reset();
-    });
-    
-    // Close mobile menu when clicking on a link
-    const navLinks = document.querySelectorAll('nav a');
-    navLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            if (window.innerWidth <= 768) {
-                nav.style.display = 'none';
-                const icon = mobileMenu.querySelector('i');
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }
-        });
-    });
-});
     </script>
 
 
 </body>
+
 </html>
