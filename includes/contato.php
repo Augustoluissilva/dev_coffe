@@ -25,6 +25,21 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/home.css">
     <style>
+        :root {
+            --primary: #2C1810;
+            --secondary: #8B4513;
+            --accent: #D2691E;
+            --light: #F8F8F8;
+            --white: #FFFFFF;
+            --text: #333333;
+            --gray: #666666;
+            --border: #E5E5E5;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            --gradient-primary: linear-gradient(135deg, var(--primary), var(--secondary));
+            --gradient-accent: linear-gradient(135deg, var(--secondary), var(--accent));
+            --gradient-light: linear-gradient(135deg, #fff8e1 0%, #f5e6cc 100%);
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -34,15 +49,15 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
         body {
             font-family: 'Poppins', sans-serif;
             line-height: 1.6;
-            color: #2d1b14;
-            background: #f8f4f0;
+            color: var(--text);
+            background: var(--light);
             overflow-x: hidden;
         }
 
         /* Hero Section */
         .contact-hero {
-            background: linear-gradient(135deg, #3e2723 0%, #5d4037 50%, #8d6e63 100%);
-            color: #fff5e6;
+            background: var(--gradient-primary);
+            color: var(--white);
             padding: 120px 0 80px;
             text-align: center;
             position: relative;
@@ -82,7 +97,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
             transform: translateX(-50%);
             width: 80px;
             height: 4px;
-            background: linear-gradient(90deg, #d7a86e, #ffd8a6);
+            background: var(--accent);
             border-radius: 2px;
         }
 
@@ -97,7 +112,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
         /* Form Section */
         .contact-form-section {
             padding: 100px 0;
-            background: linear-gradient(135deg, #fff8e1 0%, #f5e6cc 100%);
+            background: var(--gradient-light);
             position: relative;
         }
 
@@ -111,13 +126,11 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
         }
 
         .form-wrapper {
-            background: linear-gradient(145deg, #ffffff 0%, #f9f5f0 100%);
+            background: var(--white);
             border-radius: 24px;
             padding: 50px;
-            box-shadow: 
-                0 25px 50px -12px rgba(62, 39, 35, 0.15),
-                0 0 0 1px rgba(255, 255, 255, 0.8) inset;
-            border: 1px solid rgba(139, 110, 99, 0.1);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
             position: relative;
             overflow: hidden;
             animation: slideUp 0.8s ease-out;
@@ -126,6 +139,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
 
         .form-wrapper:hover {
             transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
         }
 
         .form-wrapper::before {
@@ -135,7 +149,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
             left: 0;
             right: 0;
             height: 6px;
-            background: linear-gradient(90deg, #6d4c41, #8d6e63, #a1887f, #d7ccc8);
+            background: var(--gradient-accent);
             background-size: 300% 300%;
             animation: gradientShift 3s ease infinite;
         }
@@ -158,7 +172,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
         }
 
         .form-wrapper h2 {
-            color: #3e2723;
+            color: var(--primary);
             font-size: 1.8rem;
             margin-bottom: 30px;
             font-weight: 600;
@@ -179,7 +193,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
 
         .form-group label {
             display: block;
-            color: #5d4037;
+            color: var(--secondary);
             font-weight: 500;
             margin-bottom: 8px;
             font-size: 0.95rem;
@@ -192,21 +206,19 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
         .form-group textarea {
             width: 100%;
             padding: 16px 20px;
-            border: 2px solid rgba(139, 110, 99, 0.2);
+            border: 2px solid var(--border);
             border-radius: 12px;
             font-family: 'Poppins', sans-serif;
             font-size: 1rem;
-            background: rgba(255, 255, 255, 0.8);
+            background: var(--white);
             transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
         }
 
         .form-group input:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: #6d4c41;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(109, 76, 65, 0.1);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(210, 105, 30, 0.1);
             transform: translateY(-2px);
         }
 
@@ -216,8 +228,8 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
         }
 
         .submit-btn {
-            background: linear-gradient(135deg, #6d4c41 0%, #8d6e63 100%);
-            color: #fff5e6;
+            background: var(--gradient-accent);
+            color: var(--white);
             padding: 18px 40px;
             border: none;
             border-radius: 50px;
@@ -226,7 +238,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
             font-size: 1.1rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(109, 76, 65, 0.3);
+            box-shadow: 0 10px 30px rgba(139, 69, 19, 0.3);
             width: 100%;
             position: relative;
             overflow: hidden;
@@ -250,8 +262,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
 
         .submit-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 20px 40px rgba(109, 76, 65, 0.4);
-            background: linear-gradient(135deg, #5d4037 0%, #6d4c41 100%);
+            box-shadow: 0 20px 40px rgba(139, 69, 19, 0.4);
         }
 
         .submit-btn:hover::before {
@@ -264,13 +275,11 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
 
         /* Contact Info Sidebar */
         .contact-info-sidebar {
-            background: linear-gradient(145deg, #ffffff 0%, #f9f5f0 100%);
+            background: var(--white);
             border-radius: 24px;
             padding: 50px 30px;
-            box-shadow: 
-                0 25px 50px -12px rgba(62, 39, 35, 0.15),
-                0 0 0 1px rgba(255, 255, 255, 0.8) inset;
-            border: 1px solid rgba(139, 110, 99, 0.1);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
             height: fit-content;
             position: sticky;
             top: 20px;
@@ -279,10 +288,11 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
 
         .contact-info-sidebar:hover {
             transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
         }
 
         .contact-info-sidebar h3 {
-            color: #3e2723;
+            color: var(--primary);
             font-size: 1.5rem;
             margin-bottom: 30px;
             text-align: center;
@@ -298,7 +308,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
             align-items: center;
             margin-bottom: 25px;
             padding: 15px;
-            background: rgba(255, 245, 230, 0.5);
+            background: rgba(139, 69, 19, 0.05);
             border-radius: 12px;
             transition: all 0.3s ease;
             position: relative;
@@ -312,14 +322,14 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
             top: 0;
             height: 100%;
             width: 4px;
-            background: linear-gradient(to bottom, #6d4c41, #8d6e63);
+            background: var(--gradient-accent);
             transform: scaleY(0);
             transition: transform 0.3s ease;
         }
 
         .contact-item:hover {
             transform: translateX(5px);
-            background: rgba(255, 245, 230, 0.8);
+            background: rgba(139, 69, 19, 0.1);
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
 
@@ -329,7 +339,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
 
         .contact-item i {
             font-size: 1.5rem;
-            color: #6d4c41;
+            color: var(--secondary);
             width: 40px;
             text-align: center;
             margin-right: 15px;
@@ -338,6 +348,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
 
         .contact-item:hover i {
             transform: scale(1.2);
+            color: var(--accent);
         }
 
         .contact-item div {
@@ -346,13 +357,13 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
 
         .contact-item div p {
             margin: 0;
-            color: #5d4037;
+            color: var(--primary);
             font-size: 0.95rem;
             font-weight: 500;
         }
 
         .contact-item div small {
-            color: #8d6e63;
+            color: var(--gray);
             font-size: 0.85rem;
         }
 
@@ -370,7 +381,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
             position: absolute;
             width: 20px;
             height: 12px;
-            background: radial-gradient(ellipse at center, #6d4c41 0%, #4e342e 70%);
+            background: radial-gradient(ellipse at center, var(--secondary) 0%, var(--primary) 70%);
             border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
             animation: floatCoffee 6s ease-in-out infinite;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
@@ -381,7 +392,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
             position: absolute;
             width: 8px;
             height: 8px;
-            background: #3e2723;
+            background: var(--primary);
             border-radius: 50%;
             top: 2px;
             left: 2px;
@@ -401,7 +412,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
             position: absolute;
             width: 40px;
             height: 30px;
-            background: linear-gradient(to bottom, #6d4c41, #4e342e);
+            background: linear-gradient(to bottom, var(--secondary), var(--primary));
             border-radius: 0 0 20px 20px;
             animation: floatCoffee 8s ease-in-out infinite;
             z-index: 2;
@@ -414,7 +425,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
             left: 0;
             width: 40px;
             height: 10px;
-            background: #6d4c41;
+            background: var(--secondary);
             border-radius: 10px 10px 0 0;
         }
 
@@ -425,7 +436,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
             right: -8px;
             width: 8px;
             height: 15px;
-            background: #6d4c41;
+            background: var(--secondary);
             border-radius: 0 5px 5px 0;
         }
 
@@ -499,17 +510,17 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
                     <form id="contactForm">
                         <div class="form-group">
                             <label for="nome"><i class="fas fa-user"></i> Nome Completo</label>
-                            <input type="text" id="nome" name="nome" placeholder="Ex: João Silva" required>
+                            <input type="text" id="nome" name="nome" placeholder="Insira seu nome completo" required>
                         </div>
                         
                         <div class="form-group">
                             <label for="email"><i class="fas fa-envelope"></i> E-mail</label>
-                            <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+                            <input type="email" id="email" name="email" placeholder="Insira seu Email" required>
                         </div>
                         
                         <div class="form-group">
                             <label for="telefone"><i class="fas fa-phone"></i> Telefone/WhatsApp</label>
-                            <input type="tel" id="telefone" name="telefone" placeholder="(12) 99999-9999" required>
+                            <input type="tel" id="telefone" name="telefone" placeholder="Insira seu Telefone" required>
                         </div>
                         
                         <div class="form-group">
@@ -553,7 +564,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
                     <div class="contact-item">
                         <i class="fas fa-phone"></i>
                         <div>
-                            <p>(12) 99999-9999</p>
+                            <p>(12) 99727-5329</p>
                             <small>WhatsApp disponível</small>
                         </div>
                     </div>

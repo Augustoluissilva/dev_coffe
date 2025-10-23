@@ -23,7 +23,7 @@
                 </div>
                 <div class="footer-column">
                     <h3>Institucional</h3>
-                    <a href="#">Sobre nós</a>
+                    <a href="../includes/sobre.php">Sobre nós</a>
                     <a href="#">Nossa história</a>
                     <a href="#">Trabalhe conosco</a>
                     <a href="#">Política de privacidade</a>
@@ -37,9 +37,9 @@
                 </div>
                 <div class="footer-column">
                     <h3>Contato</h3>
-                    <p><i class="fas fa-map-marker-alt"></i> Rua do Café, 123 - São Paulo, SP</p>
-                    <p><i class="fas fa-phone"></i> (11) 9999-9999</p>
-                    <p><i class="fas fa-envelope"></i> contato@devcoffee.com.br</p>
+                    <p><i class="fas fa-map-marker-alt"></i> Av. Independência, 846 - Independência, Taubaté - SP</p>
+                    <p><i class="fas fa-phone"></i> (12) 99727-5329</p>
+                    <p><i class="fas fa-envelope"></i> devcoffee.cafeteria25@gmail.com</p>
                     <div class="payment-methods">
                         <i class="fab fa-cc-visa"></i>
                         <i class="fab fa-cc-mastercard"></i>
@@ -48,8 +48,8 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 Dev Coffee. Todos os direitos reservados.</p>
-                <p>CNPJ: 12.345.678/0001-90</p>
+                <p>&copy; 2025 Dev Coffee. Todos os direitos reservados.</p>
+                <p>Desenvolvido por Equipe Dev Coffee</p>
             </div>
         </div>
     </footer>
