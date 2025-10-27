@@ -24,6 +24,9 @@ if ($conn->connect_error) {
 $usuario_id = $_SESSION['usuario_id'];
 $sql = "SELECT nome_completo, cpf, email, telefone, data_cadastro, avatar FROM usuarios WHERE id_usuario = ?";
 $stmt = $conn->prepare($sql);
+if (!$stmt) {
+    die("Erro na preparação da query de usuário: " . $conn->error);
+}
 $stmt->bind_param("i", $usuario_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -32,11 +35,15 @@ $usuario_info = array();
 if ($result->num_rows > 0) {
     $usuario_info = $result->fetch_assoc();
 }
+$stmt->close();
 
 // Buscar endereços do usuário
 $enderecos = array();
-$sql_enderecos = "SELECT * FROM enderecos WHERE usuario_id = ? ORDER BY data_cadastro DESC";
+$sql_enderecos = "SELECT * FROM enderecos WHERE id_usuario = ? ORDER BY data_cadastro DESC";
 $stmt_enderecos = $conn->prepare($sql_enderecos);
+if (!$stmt_enderecos) {
+    die("Erro na preparação da query de endereços: " . $conn->error);
+}
 $stmt_enderecos->bind_param("i", $usuario_id);
 $stmt_enderecos->execute();
 $result_enderecos = $stmt_enderecos->get_result();
@@ -70,16 +77,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
                 $caminho_relativo = 'Uploads/usuarios/' . $nome_arquivo;
                 $sql_update = "UPDATE usuarios SET avatar = ? WHERE id_usuario = ?";
                 $stmt_update = $conn->prepare($sql_update);
-                $stmt_update->bind_param("si", $caminho_relativo, $usuario_id);
-                
-                if ($stmt_update->execute()) {
-                    $mensagem_upload = '<div class="mensagem-sucesso">Foto de perfil atualizada com sucesso!</div>';
-                    $usuario_info['avatar'] = $caminho_relativo;
-                    $_SESSION['usuario_avatar'] = $caminho_relativo;
+                if (!$stmt_update) {
+                    $mensagem_upload = '<div class="mensagem-erro">Erro na preparação da query de atualização: ' . $conn->error . '</div>';
                 } else {
-                    $mensagem_upload = '<div class="mensagem-erro">Erro ao atualizar no banco de dados.</div>';
+                    $stmt_update->bind_param("si", $caminho_relativo, $usuario_id);
+                    if ($stmt_update->execute()) {
+                        $mensagem_upload = '<div class="mensagem-sucesso">Foto de perfil atualizada com sucesso!</div>';
+                        $usuario_info['avatar'] = $caminho_relativo;
+                        $_SESSION['usuario_avatar'] = $caminho_relativo;
+                    } else {
+                        $mensagem_upload = '<div class="mensagem-erro">Erro ao atualizar no banco de dados: ' . $stmt_update->error . '</div>';
+                    }
+                    $stmt_update->close();
                 }
-                $stmt_update->close();
             } else {
                 $mensagem_upload = '<div class="mensagem-erro">Erro ao fazer upload do arquivo.</div>';
             }
@@ -640,13 +650,13 @@ $conn->close();
                             <?php foreach ($enderecos as $index => $endereco): ?>
                                 <div class="endereco-item">
                                     <div class="endereco-header">
-                                        <strong><?php echo htmlspecialchars($endereco['tipo_endereco']); ?></strong>
+                                        <strong><?php echo htmlspecialchars($endereco['tipo_endereco'] ?? 'Endereço'); ?></strong>
                                         <?php if ($index === 0): ?>
                                             <span class="endereco-principal">Principal</span>
                                         <?php endif; ?>
                                     </div>
                                     <div class="endereco-info">
-                                        <p><?php echo htmlspecialchars($endereco['endereco']); ?>, <?php echo htmlspecialchars($endereco['numero']); ?>
+                                        <p><?php echo htmlspecialchars($endereco['logradouro']); ?>, <?php echo htmlspecialchars($endereco['numero']); ?>
                                             <?php if (!empty($endereco['complemento'])): ?> - <?php echo htmlspecialchars($endereco['complemento']); ?><?php endif; ?>
                                         </p>
                                         <p><?php echo htmlspecialchars($endereco['bairro']); ?> - <?php echo htmlspecialchars($endereco['cidade']); ?>/<?php echo htmlspecialchars($endereco['estado']); ?></p>
@@ -656,7 +666,7 @@ $conn->close();
                                         <?php endif; ?>
                                     </div>
                                     <div class="endereco-actions">
-                                        <a href="formulario_endereco.php?editar=<?php echo $endereco['id']; ?>" class="btn-editar-endereco">Editar</a>
+                                        <a href="formulario_endereco.php?editar=<?php echo $endereco['id_endereco']; ?>" class="btn-editar-endereco">Editar</a>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
