@@ -98,19 +98,7 @@
                     A Dev Coffee é o lugar ideal para quem busca produtividade, inspiração e sabor — tudo no mesmo ambiente.
                 </p>
                 <button class="btn-see-more" onclick="scrollToSection('discover-section')">Veja mais!</button>
-                
-                <div class="environment-grid">
-                    <div class="environment-item">
-                        <img src="images/xicara-ambiente.png" alt="Xícara de café">
-                    </div>
-                    <div class="environment-item">
-                        <img src="images/croissant-ambiente.png" alt="Croissant">
-                    </div>
-                    <div class="environment-item">
-                        <img src="images/cafe-laptop.png" alt="Café com laptop">
-                    </div>
-                </div>
-            </div>
+             
         </div>
     </section>
 
