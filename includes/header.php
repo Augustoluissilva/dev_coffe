@@ -159,9 +159,9 @@ require_once '../config/config.php';
             <nav class="main-nav">
                 <ul>
                     <li><a href="home.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'home.php' ? 'active' : ''; ?>">Home</a></li>
-                     <li><a href="menu.php">Menu</a></li>
-                    <li><a href="sobre.php">Sobre</a></li>
-                    <li><a href="contato.php">Contato</a></li>
+                    <li><a href="menu.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'menu.php' ? 'active' : ''; ?>">Menu</a></li>
+                    <li><a href="sobre.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'sobre.php' ? 'active' : ''; ?>">Sobre</a></li>
+                    <li><a href="contato.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'contato.php' ? 'active' : ''; ?>">Contato</a></li>
                 </ul>
             </nav>
             

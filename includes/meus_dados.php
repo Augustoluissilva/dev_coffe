@@ -3,8 +3,8 @@ session_start();
 
 // Verificar se usuário está logado
 if (!isset($_SESSION['usuario_id'])) {
-    // header("Location: login.php");
-    // exit();
+    header("Location: login.php");
+    exit();
 }
 
 // Conexão com o banco de dados
@@ -33,12 +33,26 @@ if ($result->num_rows > 0) {
     $usuario_info = $result->fetch_assoc();
 }
 
+// Buscar endereços do usuário
+$enderecos = array();
+$sql_enderecos = "SELECT * FROM enderecos WHERE usuario_id = ? ORDER BY data_cadastro DESC";
+$stmt_enderecos = $conn->prepare($sql_enderecos);
+$stmt_enderecos->bind_param("i", $usuario_id);
+$stmt_enderecos->execute();
+$result_enderecos = $stmt_enderecos->get_result();
+
+if ($result_enderecos->num_rows > 0) {
+    while ($row = $result_enderecos->fetch_assoc()) {
+        $enderecos[] = $row;
+    }
+}
+$stmt_enderecos->close();
+
 // Processar upload de imagem
 $mensagem_upload = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
-    $upload_dir = '../uploads/usuarios/';
+    $upload_dir = '../Uploads/usuarios/';
     
-    // Criar diretório se não existir
     if (!is_dir($upload_dir)) {
         mkdir($upload_dir, 0777, true);
     }
@@ -47,24 +61,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
     $nome_arquivo = 'usuario_' . $usuario_id . '_' . time() . '.' . pathinfo($arquivo['name'], PATHINFO_EXTENSION);
     $caminho_completo = $upload_dir . $nome_arquivo;
     
-    // Validar tipo de arquivo
     $tipos_permitidos = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
     $tipo_arquivo = mime_content_type($arquivo['tmp_name']);
     
     if (in_array($tipo_arquivo, $tipos_permitidos)) {
-        // Validar tamanho (máximo 2MB)
         if ($arquivo['size'] <= 2 * 1024 * 1024) {
             if (move_uploaded_file($arquivo['tmp_name'], $caminho_completo)) {
-                // Atualizar no banco de dados - campo avatar VARCHAR
+                $caminho_relativo = 'Uploads/usuarios/' . $nome_arquivo;
                 $sql_update = "UPDATE usuarios SET avatar = ? WHERE id_usuario = ?";
                 $stmt_update = $conn->prepare($sql_update);
-                $caminho_relativo = 'uploads/usuarios/' . $nome_arquivo;
                 $stmt_update->bind_param("si", $caminho_relativo, $usuario_id);
                 
                 if ($stmt_update->execute()) {
                     $mensagem_upload = '<div class="mensagem-sucesso">Foto de perfil atualizada com sucesso!</div>';
                     $usuario_info['avatar'] = $caminho_relativo;
-                    $_SESSION['usuario_avatar'] = $caminho_relativo; // Atualizar na sessão
+                    $_SESSION['usuario_avatar'] = $caminho_relativo;
                 } else {
                     $mensagem_upload = '<div class="mensagem-erro">Erro ao atualizar no banco de dados.</div>';
                 }
@@ -126,7 +137,6 @@ $conn->close();
             padding: 0 20px;
         }
 
-        /* Estilos da página Meus Dados */
         .dados-container {
             margin-top: 60px;
             padding: 40px 0;
@@ -201,7 +211,6 @@ $conn->close();
             color: var(--accent);
         }
 
-        /* Área de informações */
         .info-area {
             background: var(--white);
             padding: 0;
@@ -251,7 +260,6 @@ $conn->close();
             color: var(--text-gray);
         }
 
-        /* Upload de Imagem */
         .upload-area {
             display: flex;
             flex-direction: column;
@@ -330,7 +338,6 @@ $conn->close();
             margin-bottom: 15px;
         }
 
-        /* Mensagens */
         .mensagem-sucesso {
             background: #d4edda;
             color: #155724;
@@ -378,58 +385,109 @@ $conn->close();
             transform: translateY(-2px);
         }
 
-        /* Responsividade */
+        .enderecos-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .endereco-item {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            background: var(--light-gray);
+            transition: var(--transition);
+        }
+
+        .endereco-item:hover {
+            border-color: var(--accent);
+            box-shadow: var(--shadow);
+        }
+
+        .endereco-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .endereco-header strong {
+            color: var(--text-dark);
+            font-size: 16px;
+            text-transform: capitalize;
+        }
+
+        .endereco-principal {
+            background: var(--accent);
+            color: var(--white);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .endereco-info p {
+            margin: 5px 0;
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        .endereco-info p:first-child {
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .endereco-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-editar.pequeno {
+            padding: 6px 12px;
+            font-size: 12px;
+            margin-top: 0;
+        }
+
+        .btn-editar-endereco {
+            background: var(--accent);
+            color: var(--white);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-editar-endereco:hover {
+            background: #c49565;
+            transform: translateY(-1px);
+        }
+
         @media (max-width: 768px) {
-            .dados-container {
-                margin-top: 40px;
-                padding: 20px 0;
-            }
-
-            .dados-title {
-                font-size: 28px;
-                margin-bottom: 30px;
-            }
-
-            .dados-item {
-                padding: 16px;
-            }
-
-            .info-area.active {
-                padding: 20px;
-            }
-
-            .info-title {
-                font-size: 16px;
-            }
-
-            .info-item {
-                flex-direction: column;
-                gap: 5px;
-            }
-
-            .upload-area {
-                padding: 20px;
-            }
-
-            .foto-preview,
-            .foto-placeholder {
-                width: 100px;
-                height: 100px;
-            }
+            .dados-container { margin-top: 40px; padding: 20px 0; }
+            .dados-title { font-size: 28px; margin-bottom: 30px; }
+            .dados-item { padding: 16px; }
+            .info-area.active { padding: 20px; }
+            .info-title { font-size: 16px; }
+            .info-item { flex-direction: column; gap: 5px; }
+            .upload-area { padding: 20px; }
+            .foto-preview, .foto-placeholder { width: 100px; height: 100px; }
+            .endereco-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .endereco-actions { flex-direction: column; }
         }
 
         @media (max-width: 480px) {
-            .dados-title {
-                font-size: 24px;
-            }
-
-            .dados-item-title {
-                font-size: 16px;
-            }
-
-            .dados-item-description {
-                font-size: 13px;
-            }
+            .dados-title { font-size: 24px; }
+            .dados-item-title { font-size: 16px; }
+            .dados-item-description { font-size: 13px; }
         }
     </style>
 </head>
@@ -441,7 +499,6 @@ $conn->close();
             <h1 class="dados-title">Meus dados</h1>
             
             <div class="dados-section">
-                <!-- Informações Pessoais -->
                 <div class="dados-item" data-target="info-pessoais">
                     <div class="dados-content">
                         <div class="dados-item-title">Informações pessoais</div>
@@ -454,46 +511,31 @@ $conn->close();
                 
                 <div class="info-area" id="info-pessoais">
                     <h3 class="info-title">Informações Pessoais</h3>
-                    
-                    <!-- Upload de Avatar -->
                     <div class="upload-area">
                         <div class="upload-text">
                             <h4>Foto de Perfil</h4>
                             <p>Adicione uma foto para personalizar seu perfil</p>
                         </div>
-                        
                         <?php 
-                        $avatar_path = '';
-                        if (!empty($usuario_info['avatar']) && $usuario_info['avatar'] !== 'default-avatar.jpg') {
-                            $avatar_path = '../' . $usuario_info['avatar'];
-                        }
-                        
+                        $avatar_path = !empty($usuario_info['avatar']) && $usuario_info['avatar'] !== 'default-avatar.jpg' ? '../' . $usuario_info['avatar'] : '';
                         if (!empty($avatar_path) && file_exists($avatar_path)): ?>
-                            <img src="<?php echo htmlspecialchars($avatar_path); ?>" 
-                                 alt="Foto de perfil" 
-                                 class="foto-preview"
-                                 id="fotoPreview">
+                            <img src="<?php echo htmlspecialchars($avatar_path); ?>" alt="Foto de perfil" class="foto-preview" id="fotoPreview">
                         <?php else: ?>
                             <div class="foto-placeholder" id="fotoPlaceholder">
                                 <i class="fas fa-user"></i>
                             </div>
                         <?php endif; ?>
-                        
                         <form method="POST" enctype="multipart/form-data" id="uploadForm">
                             <input type="file" name="avatar" id="avatarInput" class="file-input" accept="image/jpeg,image/jpg,image/png,image/gif">
                             <button type="button" class="upload-btn" onclick="document.getElementById('avatarInput').click()">
-                                <i class="fas fa-camera"></i>
-                                Escolher Foto
+                                <i class="fas fa-camera"></i> Escolher Foto
                             </button>
                             <button type="submit" class="upload-btn" style="background: #28a745;">
-                                <i class="fas fa-upload"></i>
-                                Enviar Foto
+                                <i class="fas fa-upload"></i> Enviar Foto
                             </button>
                         </form>
-                        
                         <?php echo $mensagem_upload; ?>
                     </div>
-
                     <?php if (!empty($usuario_info)): ?>
                         <div class="info-grid">
                             <div class="info-item">
@@ -504,11 +546,7 @@ $conn->close();
                                 <span class="info-label">CPF:</span>
                                 <span class="info-value"><?php 
                                     $cpf = $usuario_info['cpf'] ?? '';
-                                    if (!empty($cpf)) {
-                                        echo preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $cpf);
-                                    } else {
-                                        echo 'Não informado';
-                                    }
+                                    echo !empty($cpf) ? preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $cpf) : 'Não informado';
                                 ?></span>
                             </div>
                         </div>
@@ -522,7 +560,6 @@ $conn->close();
                     <?php endif; ?>
                 </div>
 
-                <!-- Restante das seções -->
                 <div class="dados-item" data-target="dados-contato">
                     <div class="dados-content">
                         <div class="dados-item-title">Dados de contato</div>
@@ -545,11 +582,7 @@ $conn->close();
                                 <span class="info-label">Telefone:</span>
                                 <span class="info-value"><?php 
                                     $telefone = $usuario_info['telefone'] ?? '';
-                                    if (!empty($telefone)) {
-                                        echo preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $telefone);
-                                    } else {
-                                        echo 'Não informado';
-                                    }
+                                    echo !empty($telefone) ? preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $telefone) : 'Não informado';
                                 ?></span>
                             </div>
                         </div>
@@ -579,11 +612,7 @@ $conn->close();
                         <div class="info-item">
                             <span class="info-label">Data de cadastro:</span>
                             <span class="info-value"><?php 
-                                if (!empty($usuario_info['data_cadastro'])) {
-                                    echo date('d/m/Y', strtotime($usuario_info['data_cadastro']));
-                                } else {
-                                    echo 'Não disponível';
-                                }
+                                echo !empty($usuario_info['data_cadastro']) ? date('d/m/Y', strtotime($usuario_info['data_cadastro'])) : 'Não disponível';
                             ?></span>
                         </div>
                         <div class="info-item">
@@ -606,11 +635,44 @@ $conn->close();
                 
                 <div class="info-area" id="enderecos">
                     <h3 class="info-title">Meus Endereços</h3>
-                    <div class="empty-state">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <p>Nenhum endereço cadastrado</p>
-                        <button class="btn-editar">Cadastrar Endereço</button>
-                    </div>
+                    <?php if (!empty($enderecos)): ?>
+                        <div class="enderecos-list">
+                            <?php foreach ($enderecos as $index => $endereco): ?>
+                                <div class="endereco-item">
+                                    <div class="endereco-header">
+                                        <strong><?php echo htmlspecialchars($endereco['tipo_endereco']); ?></strong>
+                                        <?php if ($index === 0): ?>
+                                            <span class="endereco-principal">Principal</span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="endereco-info">
+                                        <p><?php echo htmlspecialchars($endereco['endereco']); ?>, <?php echo htmlspecialchars($endereco['numero']); ?>
+                                            <?php if (!empty($endereco['complemento'])): ?> - <?php echo htmlspecialchars($endereco['complemento']); ?><?php endif; ?>
+                                        </p>
+                                        <p><?php echo htmlspecialchars($endereco['bairro']); ?> - <?php echo htmlspecialchars($endereco['cidade']); ?>/<?php echo htmlspecialchars($endereco['estado']); ?></p>
+                                        <p>CEP: <?php echo htmlspecialchars($endereco['cep']); ?></p>
+                                        <?php if (!empty($endereco['referencia'])): ?>
+                                            <p>Referência: <?php echo htmlspecialchars($endereco['referencia']); ?></p>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="endereco-actions">
+                                        <a href="formulario_endereco.php?editar=<?php echo $endereco['id']; ?>" class="btn-editar-endereco">Editar</a>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="empty-state">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <p>Nenhum endereço cadastrado</p>
+                            <button class="btn-editar" onclick="window.location.href='formulario_endereco.php'">Cadastrar Endereço</button>
+                        </div>
+                    <?php endif; ?>
+                    <?php if (!empty($enderecos)): ?>
+                        <button class="btn-editar" onclick="window.location.href='formulario_endereco.php'" style="margin-top: 20px;">
+                            <i class="fas fa-plus"></i> Adicionar Novo Endereço
+                        </button>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -621,13 +683,11 @@ $conn->close();
             const dadosItems = document.querySelectorAll('.dados-item');
             let activeItem = null;
 
-            // Configurar eventos de clique
             dadosItems.forEach(item => {
                 item.addEventListener('click', function() {
                     const targetId = this.getAttribute('data-target');
                     const targetArea = document.getElementById(targetId);
 
-                    // Se clicar no mesmo item, fecha a área
                     if (activeItem === this) {
                         this.classList.remove('active');
                         targetArea.classList.remove('active');
@@ -635,7 +695,6 @@ $conn->close();
                         return;
                     }
 
-                    // Fecha a área ativa anterior (se houver)
                     if (activeItem) {
                         const previousTargetId = activeItem.getAttribute('data-target');
                         const previousArea = document.getElementById(previousTargetId);
@@ -643,19 +702,16 @@ $conn->close();
                         previousArea.classList.remove('active');
                     }
 
-                    // Abre a nova área
                     this.classList.add('active');
                     targetArea.classList.add('active');
                     activeItem = this;
 
-                    // Efeito visual de clique
                     this.style.transform = 'scale(0.98)';
                     setTimeout(() => {
                         this.style.transform = 'scale(1)';
                     }, 150);
                 });
 
-                // Acessibilidade - navegação por teclado
                 item.setAttribute('tabindex', '0');
                 item.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -665,7 +721,6 @@ $conn->close();
                 });
             });
 
-            // Preview da imagem antes do upload
             const avatarInput = document.getElementById('avatarInput');
             if (avatarInput) {
                 avatarInput.addEventListener('change', function(e) {
@@ -673,13 +728,9 @@ $conn->close();
                     if (file) {
                         const reader = new FileReader();
                         reader.onload = function(e) {
-                            // Remove o placeholder se existir
                             const placeholder = document.getElementById('fotoPlaceholder');
-                            if (placeholder) {
-                                placeholder.style.display = 'none';
-                            }
+                            if (placeholder) placeholder.style.display = 'none';
                             
-                            // Cria ou atualiza a preview
                             let preview = document.getElementById('fotoPreview');
                             if (!preview) {
                                 preview = document.createElement('img');
@@ -687,20 +738,20 @@ $conn->close();
                                 preview.className = 'foto-preview';
                                 document.querySelector('.upload-area').insertBefore(preview, document.querySelector('.upload-text').nextSibling);
                             }
-                            
                             preview.src = e.target.result;
-                        }
+                        };
                         reader.readAsDataURL(file);
                     }
                 });
             }
 
-            // Eventos para botões de editar
             document.querySelectorAll('.btn-editar').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const section = this.closest('.info-area').id;
-                    alert(`Função de edição para ${section} será implementada aqui!`);
-                });
+                if (!btn.classList.contains('pequeno')) {
+                    btn.addEventListener('click', function() {
+                        const section = this.closest('.info-area').id;
+                        alert(`Função de edição para ${section} será implementada aqui!`);
+                    });
+                }
             });
         });
     </script>

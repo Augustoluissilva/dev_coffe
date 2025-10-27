@@ -167,7 +167,7 @@ $usuario_nome = isset($_SESSION['usuario_nome']) ? htmlspecialchars($_SESSION['u
                 </div>
                 
                 <div style="text-align: center; margin-top: 40px;">
-                    <a href="produtos.php" class="cta-button">Ver Todos os Produtos</a>
+                    <a href="../includes/menu.php" class="cta-button">Ver Todos os Produtos</a>
                 </div>
                 
             <?php elseif (isset($error_message)): ?>
